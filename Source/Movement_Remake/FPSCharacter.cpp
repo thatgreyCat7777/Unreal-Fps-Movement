@@ -165,7 +165,7 @@ void AFPSCharacter::StopCrouch(const FInputActionInstance &Instance)
     {
         bAppliedSlideForce = false;
     }
-};
+}
 void AFPSCharacter::OnComponentHit(UPrimitiveComponent *HitComp, AActor *OtherActor, UPrimitiveComponent *OtherComp,
                                    FVector NormalImpulse, const FHitResult &Hit)
 {
