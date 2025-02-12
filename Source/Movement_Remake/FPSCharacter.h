@@ -82,6 +82,9 @@ private:
     UPROPERTY(EditAnywhere, Category = "Transitions")
     float CrouchTransitionSpeed = 25.f;
 
+    // Minimum pitch (x) and yaw (y) wall angles for wall running
+    FVector2D MinWallAngle;
+
     // States to keep track of
 
     // True whenever player is crouching

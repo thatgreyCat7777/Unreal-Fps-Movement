@@ -127,7 +127,8 @@ void AFPSCharacter::StartCrouch(const FInputActionInstance &Instance)
 
     // Adds message containing character velocity
     // GEngine->AddOnScreenDebugMessage(0, 5.f, FColor::Green,
-    //                                  FString::Printf(TEXT("Velocity = %d"), GetCharacterMovement()->Velocity.Size2D()));
+    //                                  FString::Printf(TEXT("Velocity = %d"),
+    //                                  GetCharacterMovement()->Velocity.Size2D()));
     // Sets ground friction to sliding friction
     GetCharacterMovement()->GroundFriction = SlideFriction;
     GetCharacterMovement()->BrakingFrictionFactor = 0.1f;
@@ -193,6 +194,11 @@ void AFPSCharacter::OnComponentHit(UPrimitiveComponent *HitComp, AActor *OtherAc
     GEngine->AddOnScreenDebugMessage(
         0, 5, FColor::Emerald,
         FString::Printf(TEXT("Normal: %s, Length: %d"), *Hit.Normal.ToString(), Hit.Normal.Length()));
+    // Debug message to check
+    if (IsWall(Hit.Normal))
+    {
+        GEngine->AddOnScreenDebugMessage(0, 5, FColor::Blue, TEXT("IsWall = True!"));
+    }
 }
 // Makes smoothly camera tilt when sliding
 void AFPSCharacter::SlideCameraTilt(float Angle, const float &DeltaTime)
@@ -222,4 +228,7 @@ void AFPSCharacter::GradualCrouch(float ZScale, const float &DeltaTime)
     }
 }
 
-bool AFPSCharacter::IsWall(const FVector &Normal) { return false; }
+bool AFPSCharacter::IsWall(const FVector &Normal)
+{
+    return FMath::IsNearlyEqual(FMath::Abs(Normal.X), 1) || FMath::IsNearlyEqual(FMath::Abs(Normal.Y), 1);
+}
