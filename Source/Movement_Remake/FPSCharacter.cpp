@@ -55,7 +55,7 @@ void AFPSCharacter::Tick(float DeltaTime)
     if (bIsCrouching)
     {
         // Makes smoothly camera tilt when sliding
-        SlideCameraTilt(-3.f, DeltaTime);
+        SmoothCameraTilt(-3.f, SlideCameraTiltSpeed, DeltaTime);
         // Gradually changes scale of player to crouch scale
         GradualCrouch(CrouchScale.Z, DeltaTime);
         if (GetCharacterMovement()->IsMovingOnGround() && GetCharacterMovement()->IsJumpAllowed())
@@ -70,7 +70,7 @@ void AFPSCharacter::Tick(float DeltaTime)
     else
     {
         // Makes smoothly camera tilt when sliding
-        SlideCameraTilt(0.f, DeltaTime);
+        SmoothCameraTilt(0.f, SlideCameraTiltSpeed, DeltaTime);
         // Gradually changes scale of player to normal scale
         GradualCrouch(NormalScale.Z, DeltaTime);
     }
@@ -201,12 +201,12 @@ void AFPSCharacter::OnComponentHit(UPrimitiveComponent *HitComp, AActor *OtherAc
     }
 }
 // Makes smoothly camera tilt when sliding
-void AFPSCharacter::SlideCameraTilt(float Angle, const float &DeltaTime)
+void AFPSCharacter::SmoothCameraTilt(float Angle, const float &TiltSpeed, const float &DeltaTime)
 {
     FRotator CameraTilt = CameraComp->GetRelativeRotation();
     if (!FMath::IsNearlyEqual(CameraTilt.Roll, Angle))
     {
-        CameraTilt.Roll = FMath::FInterpTo(CameraTilt.Roll, Angle, DeltaTime, SlideCameraTiltSpeed);
+        CameraTilt.Roll = FMath::FInterpTo(CameraTilt.Roll, Angle, DeltaTime, TiltSpeed);
         CameraComp->SetRelativeRotation(CameraTilt);
     }
 }
