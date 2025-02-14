@@ -233,3 +233,7 @@ bool AFPSCharacter::IsWall(const FVector &Normal)
     // return Fmath::IsNearlyEqual(Fmath::Abs(Normal.Z), 0)
     return FMath::IsNearlyEqual(FMath::Abs(Normal.X), 1) || FMath::IsNearlyEqual(FMath::Abs(Normal.Y), 1);
 }
+/*void AFPSCharacter::StartWallRun()
+{
+    GetCharacterMovement->Velocity.Z = 0;
+}*/
