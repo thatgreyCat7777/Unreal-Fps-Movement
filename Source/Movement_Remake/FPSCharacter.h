@@ -78,6 +78,10 @@ private:
     float SlideFriction = .2f;
     UPROPERTY(EditAnywhere, Category = "Movement")
     float WallRunGravity = 1;
+    UPROPERTY(EditAnywhere, Category = "Movement")
+    float WallRunSpeed = 600.f;
+    UPROPERTY(EditAnywhere, Category = "Movement")
+    float WallJumpForce = 300.f;
 
     // Transition Speeds
 
@@ -137,4 +141,6 @@ private:
     void WallRun(const float &DeltaTime);
     UFUNCTION()
     void StopWallRun();
+    UFUNCTION()
+    void WallJump();
 };

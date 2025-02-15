@@ -99,6 +99,7 @@ void AFPSCharacter::SetupPlayerInputComponent(UInputComponent *PlayerInputCompon
         EnhancedInput->BindAction(LookAction, ETriggerEvent::Triggered, this, &AFPSCharacter::Look);
         // Binds jump function to built in jump function
         EnhancedInput->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ACharacter::Jump);
+        EnhancedInput->BindAction(JumpAction, ETriggerEvent::Triggered, this, &AFPSCharacter::WallJump);
         // Binds bIsCrouching to startcrouch and stopcrouch function
         EnhancedInput->BindAction(CrouchAction, ETriggerEvent::Started, this, &AFPSCharacter::StartCrouch);
         EnhancedInput->BindAction(CrouchAction, ETriggerEvent::Completed, this, &AFPSCharacter::StopCrouch);
@@ -272,11 +273,21 @@ void AFPSCharacter::WallRun(const float &DeltaTime)
 {
     GetCharacterMovement()->Velocity += -WallNormalVector * DeltaTime * 1000;
     GetCharacterMovement()->Velocity += FVector::UpVector * DeltaTime * GetCharacterMovement()->Mass * WallRunGravity *
-                                        GetCharacterMovement()->GetGravityDirection() * .4f;
+                                        GetCharacterMovement()->GetGravityDirection() * .4f * WallRunSpeed;
 }
 // Stops the wall running
 void AFPSCharacter::StopWallRun()
 {
-    GetCharacterMovement()->Velocity += WallNormalVector * 600.f;
+    GetCharacterMovement()->Velocity += WallNormalVector * WallRunSpeed;
     bIsWallrunning = false;
+}
+void AFPSCharacter::WallJump()
+{
+    if (bIsWallrunning)
+    {
+        StopWallRun();
+        GetCharacterMovement()->Launch(
+            (FVector::UpVector * 1.7 + WallNormalVector * 2 + GetCharacterMovement()->Velocity.GetSafeNormal()) *
+            WallJumpForce);
+    }
 }
