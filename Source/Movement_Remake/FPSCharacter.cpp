@@ -106,7 +106,7 @@ void AFPSCharacter::SetupPlayerInputComponent(UInputComponent *PlayerInputCompon
         GEngine->AddOnScreenDebugMessage(1, 3.f, FColor::Green, TEXT("Input Actions Binded"));
     }
 }
-
+// Function for walking functionality
 void AFPSCharacter::Walk(const FInputActionInstance &Instance)
 {
     // Gets value of input
@@ -119,7 +119,7 @@ void AFPSCharacter::Walk(const FInputActionInstance &Instance)
     //                                                  GetCharacterMovement()->Velocity.Size2D(),
     //                                                  GetCharacterMovement()->CurrentFloor.HitResult.Normal.Z));
 }
-
+// Function for player camera rotation
 void AFPSCharacter::Look(const FInputActionInstance &Instance)
 {
     FVector2D Input = Instance.GetValue().Get<FVector2D>();
@@ -127,6 +127,7 @@ void AFPSCharacter::Look(const FInputActionInstance &Instance)
     AddControllerYawInput(Input.X);
     // GEngine->AddOnScreenDebugMessage(0, 3.0f, FColor::Blue, TEXT("Look"));
 }
+// Starts crouching 
 void AFPSCharacter::StartCrouch(const FInputActionInstance &Instance)
 {
     // SetActorScale3D(CrouchScale);
@@ -160,6 +161,7 @@ void AFPSCharacter::StartCrouch(const FInputActionInstance &Instance)
         }
     }
 }
+// Stops Crouching 
 void AFPSCharacter::StopCrouch(const FInputActionInstance &Instance)
 {
     // SetActorScale3D(NormalScale);
@@ -243,12 +245,13 @@ void AFPSCharacter::GradualCrouch(float ZScale, const float &DeltaTime)
         SetActorLocation(NewLocation);
     }
 }
-
+// Checks if the object the player collides with is a wall
 bool AFPSCharacter::IsWall(const FVector &Normal)
 {
     return FMath::IsNearlyEqual(FMath::Abs(Normal.Z), 0);
     // return FMath::IsNearlyEqual(FMath::Abs(Normal.X), 1) || FMath::IsNearlyEqual(FMath::Abs(Normal.Y), 1);
 }
+// Starts the wall run
 void AFPSCharacter::StartWallRun(const FVector Normal)
 {
     if (!GetCharacterMovement()->IsMovingOnGround())
@@ -263,12 +266,14 @@ void AFPSCharacter::StartWallRun(const FVector Normal)
         bIsWallrunning = true;
     }
 }
+// Called every frame when wall running
 void AFPSCharacter::WallRun(const float &DeltaTime)
 {
     GetCharacterMovement()->Velocity += -WallNormalVector * DeltaTime * 1000;
     GetCharacterMovement()->Velocity += FVector::UpVector * DeltaTime * GetCharacterMovement()->Mass * WallRunGravity *
                                         GetCharacterMovement()->GetGravityDirection() * .4f;
 }
+// Stops the wall running
 void AFPSCharacter::StopWallRun()
 {
     GetCharacterMovement()->Velocity += WallNormalVector * 600.f;

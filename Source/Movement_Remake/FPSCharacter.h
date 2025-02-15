@@ -83,14 +83,12 @@ private:
     // Transition speed of crouching
     UPROPERTY(EditAnywhere, Category = "Transitions")
     float CrouchTransitionSpeed = 25.f;
+    // Wall running camera tilt speed
     UPROPERTY(EditAnywhere, Category = "Transitions")
     float WallRunTransitionSpeed = 10.f;
+    // Angle camera tilts at when wall running 
     UPROPERTY(EditAnywhere, Category = "Transitions")
-    float WallRunCameraTiltAngle = 15.f;
-
-
-    // Minimum pitch (x) and yaw (y) wall angles for wall running
-    FVector2D MinWallAngle;
+    float WallRunCameraTiltAngle = 10.f;
 
     // States to keep track of
 
