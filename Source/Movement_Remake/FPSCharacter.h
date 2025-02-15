@@ -126,4 +126,6 @@ private:
     void StartWallRun(const FVector Normal);
     UFUNCTION()
     void WallRun(const float &DeltaTime);
+    UFUNCTION()
+    void StopWallRun();
 };
