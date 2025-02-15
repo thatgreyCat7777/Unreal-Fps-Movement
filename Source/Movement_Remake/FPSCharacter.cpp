@@ -4,7 +4,6 @@
 #include "Components/CapsuleComponent.h"
 #include "Containers/UnrealString.h"
 #include "Engine/Engine.h"
-#include "Engine/TimerHandle.h"
 #include "EnhancedInputComponent.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -15,7 +14,6 @@
 #include "Math/UnrealMathUtility.h"
 #include "Templates/Casts.h"
 #include "Delegates/Delegate.h"
-#include "TimerManager.h"
 
 // Sets default values
 AFPSCharacter::AFPSCharacter()
