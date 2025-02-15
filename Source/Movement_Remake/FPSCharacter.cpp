@@ -57,7 +57,10 @@ void AFPSCharacter::Tick(float DeltaTime)
     if (bIsCrouching)
     {
         // Makes smoothly camera tilt when sliding
-        SmoothCameraTilt(-3.f, SlideCameraTiltSpeed, DeltaTime);
+        if (!bIsWallrunning)
+        {
+            SmoothCameraTilt(-3.f, SlideCameraTiltSpeed, DeltaTime);
+        }
         // Gradually changes scale of player to crouch scale
         GradualCrouch(CrouchScale.Z, DeltaTime);
         if (GetCharacterMovement()->IsMovingOnGround() && GetCharacterMovement()->IsJumpAllowed())
@@ -72,9 +75,17 @@ void AFPSCharacter::Tick(float DeltaTime)
     else
     {
         // Makes smoothly camera tilt when sliding
-        SmoothCameraTilt(0.f, SlideCameraTiltSpeed, DeltaTime);
+        if (!bIsWallrunning)
+        {
+            SmoothCameraTilt(0.f, SlideCameraTiltSpeed, DeltaTime);
+        }
         // Gradually changes scale of player to normal scale
         GradualCrouch(NormalScale.Z, DeltaTime);
+    }
+    if (bIsWallrunning)
+    {
+        WallRun(DeltaTime);
+        SmoothCameraTilt(WallRunTiltDirection * WallRunCameraTiltAngle,WallRunTransitionSpeed, DeltaTime);
     }
 }
 
@@ -191,15 +202,19 @@ void AFPSCharacter::OnComponentHit(UPrimitiveComponent *HitComp, AActor *OtherAc
             bAppliedSlideForce = false;
             // GEngine->AddOnScreenDebugMessage(0, 5, FColor::Blue, TEXT("Slide reset"));
         }
+        if (bIsWallrunning)
+        {
+            bIsWallrunning = false;
+        }
     }
     // Debug message
-    GEngine->AddOnScreenDebugMessage(
-        0, 5, FColor::Emerald,
-        FString::Printf(TEXT("Normal: %s, Length: %d"), *Hit.Normal.ToString(), Hit.Normal.Length()));
+    GEngine->AddOnScreenDebugMessage(0, 5, FColor::Emerald,
+                                     FString::Printf(TEXT("Normal: %s, RightVector: %s"), *Hit.Normal.ToString(),
+                                                     *GetActorRightVector().ToString()));
     // Debug message to check
     if (IsWall(Hit.Normal))
     {
-        GEngine->AddOnScreenDebugMessage(0, 5, FColor::Blue, TEXT("IsWall = True!"));
+        // GEngine->AddOnScreenDebugMessage(0, 5, FColor::Blue, TEXT("IsWall = True!"));
         StartWallRun(Hit.Normal);
     }
 }
@@ -241,25 +256,23 @@ void AFPSCharacter::StartWallRun(const FVector Normal)
     if (!GetCharacterMovement()->IsMovingOnGround())
     {
         WallNormalVector = Normal;
-        if (!bIsWalltrunning)
+        WallRunTiltDirection = FMath::Sign(FVector::DotProduct(GetActorRightVector(), WallNormalVector));
+        if (!bIsWallrunning)
         {
             GetCharacterMovement()->Velocity.Z = 0;
             GetCharacterMovement()->Velocity.Z += 100.f;
         }
-        bIsWalltrunning = true;
+        bIsWallrunning = true;
     }
 }
 void AFPSCharacter::WallRun(const float &DeltaTime)
 {
-    if (bIsWalltrunning)
-    {
-        GetCharacterMovement()->Velocity += -WallNormalVector * DeltaTime * 1000;
-        GetCharacterMovement()->Velocity += FVector::UpVector * DeltaTime * GetCharacterMovement()->Mass *
-                                            WallRunGravity * GetCharacterMovement()->GetGravityDirection() * .4f;
-    }
+    GetCharacterMovement()->Velocity += -WallNormalVector * DeltaTime * 1000;
+    GetCharacterMovement()->Velocity += FVector::UpVector * DeltaTime * GetCharacterMovement()->Mass * WallRunGravity *
+                                        GetCharacterMovement()->GetGravityDirection() * .4f;
 }
 void AFPSCharacter::StopWallRun()
 {
     GetCharacterMovement()->Velocity += WallNormalVector * 600.f;
-    bIsWalltrunning = false;
+    bIsWallrunning = false;
 }

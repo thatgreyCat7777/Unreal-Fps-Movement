@@ -83,6 +83,11 @@ private:
     // Transition speed of crouching
     UPROPERTY(EditAnywhere, Category = "Transitions")
     float CrouchTransitionSpeed = 25.f;
+    UPROPERTY(EditAnywhere, Category = "Transitions")
+    float WallRunTransitionSpeed = 10.f;
+    UPROPERTY(EditAnywhere, Category = "Transitions")
+    float WallRunCameraTiltAngle = 15.f;
+
 
     // Minimum pitch (x) and yaw (y) wall angles for wall running
     FVector2D MinWallAngle;
@@ -94,9 +99,11 @@ private:
     // True whenever initial slide impulse is applied to the player
     bool bAppliedSlideForce = false;
     // True when player is wallrunning
-    bool bIsWalltrunning;
+    bool bIsWallrunning = false;
     // Normal vector for wall normal
     FVector WallNormalVector;
+    // Dot product between wall normal and player right vector
+    float WallRunTiltDirection = 0;
 
 private:
     // Function for fps camera rotations
