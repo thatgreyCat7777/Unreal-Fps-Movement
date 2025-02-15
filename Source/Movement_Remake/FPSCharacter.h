@@ -2,6 +2,7 @@
 
 #pragma once
 #include "CoreMinimal.h"
+#include "Components/CapsuleComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/Actor.h"
@@ -10,6 +11,7 @@
 #include "InputAction.h"
 #include "Math/MathFwd.h"
 #include "FPSCharacter.generated.h"
+
 UCLASS()
 class MOVEMENT_REMAKE_API AFPSCharacter : public ACharacter
 {
@@ -38,6 +40,8 @@ private:
     UCameraComponent *CameraComp;
     UPROPERTY(EditAnywhere, Category = "Components")
     USpringArmComponent *SpringArm;
+    UPROPERTY(EditAnywhere, Category = "Components")
+    UCapsuleComponent *PlayerOverlapCollider;
 
     // Input actions
     UPROPERTY(EditAnywhere, Category = "Input")
@@ -86,7 +90,7 @@ private:
     // Wall running camera tilt speed
     UPROPERTY(EditAnywhere, Category = "Transitions")
     float WallRunTransitionSpeed = 10.f;
-    // Angle camera tilts at when wall running 
+    // Angle camera tilts at when wall running
     UPROPERTY(EditAnywhere, Category = "Transitions")
     float WallRunCameraTiltAngle = 10.f;
 
@@ -115,8 +119,8 @@ private:
     UFUNCTION()
     void StopCrouch(const FInputActionInstance &Instance);
     UFUNCTION()
-    void OnComponentHit(UPrimitiveComponent *HitComp, AActor *OtherActor, UPrimitiveComponent *OtherComp,
-                        FVector NormalImpulse, const FHitResult &Hit);
+    void OnComponentHitCharacter(UPrimitiveComponent *HitComp, AActor *OtherActor, UPrimitiveComponent *OtherComp,
+                                 FVector NormalImpulse, const FHitResult &Hit);
     UFUNCTION()
     void SmoothCameraTilt(float Angle, const float &TiltSpeed, const float &DeltaTime);
     UFUNCTION()

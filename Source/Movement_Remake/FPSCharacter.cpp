@@ -45,7 +45,7 @@ void AFPSCharacter::BeginPlay()
     // Sets character's max walkspeed to default set in the class
     GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
     // Links oncomponenthit function
-    GetCapsuleComponent()->OnComponentHit.AddDynamic(this, &AFPSCharacter::OnComponentHit);
+    GetCapsuleComponent()->OnComponentHit.AddDynamic(this, &AFPSCharacter::OnComponentHitCharacter);
 }
 
 // Called every frame
@@ -83,7 +83,7 @@ void AFPSCharacter::Tick(float DeltaTime)
     if (bIsWallrunning)
     {
         WallRun(DeltaTime);
-        SmoothCameraTilt(WallRunTiltDirection * WallRunCameraTiltAngle,WallRunTransitionSpeed, DeltaTime);
+        SmoothCameraTilt(WallRunTiltDirection * WallRunCameraTiltAngle, WallRunTransitionSpeed, DeltaTime);
     }
 }
 
@@ -127,7 +127,7 @@ void AFPSCharacter::Look(const FInputActionInstance &Instance)
     AddControllerYawInput(Input.X);
     // GEngine->AddOnScreenDebugMessage(0, 3.0f, FColor::Blue, TEXT("Look"));
 }
-// Starts crouching 
+// Starts crouching
 void AFPSCharacter::StartCrouch(const FInputActionInstance &Instance)
 {
     // SetActorScale3D(CrouchScale);
@@ -161,7 +161,7 @@ void AFPSCharacter::StartCrouch(const FInputActionInstance &Instance)
         }
     }
 }
-// Stops Crouching 
+// Stops Crouching
 void AFPSCharacter::StopCrouch(const FInputActionInstance &Instance)
 {
     // SetActorScale3D(NormalScale);
@@ -180,8 +180,9 @@ void AFPSCharacter::StopCrouch(const FInputActionInstance &Instance)
         bAppliedSlideForce = false;
     }
 }
-void AFPSCharacter::OnComponentHit(UPrimitiveComponent *HitComp, AActor *OtherActor, UPrimitiveComponent *OtherComp,
-                                   FVector NormalImpulse, const FHitResult &Hit)
+void AFPSCharacter::OnComponentHitCharacter(UPrimitiveComponent *HitComp, AActor *OtherActor,
+                                            UPrimitiveComponent *OtherComp, FVector NormalImpulse,
+                                            const FHitResult &Hit)
 {
     // GEngine->AddOnScreenDebugMessage(0, 5.0f, FColor::Cyan, TEXT("CompHit"));
     if (GetCharacterMovement()->IsMovingOnGround())
