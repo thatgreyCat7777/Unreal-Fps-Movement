@@ -72,6 +72,8 @@ private:
     // Ground friction when sliding
     UPROPERTY(EditAnywhere, Category = "Movement")
     float SlideFriction = .2f;
+    UPROPERTY(EditAnywhere, Category = "Movement")
+    float WallRunGravity = 1;
 
     // Transition Speeds
 
@@ -91,6 +93,10 @@ private:
     bool bIsCrouching = false;
     // True whenever initial slide impulse is applied to the player
     bool bAppliedSlideForce = false;
+    // True when player is wallrunning
+    bool bIsWalltrunning;
+    // Normal vector for wall normal
+    FVector WallNormalVector;
 
 private:
     // Function for fps camera rotations
@@ -116,4 +122,8 @@ private:
     // TODO - Implement IsWall function
     UFUNCTION()
     bool IsWall(const FVector &Normal);
+    UFUNCTION()
+    void StartWallRun(const FVector Normal);
+    UFUNCTION()
+    void WallRun(const float &DeltaTime);
 };

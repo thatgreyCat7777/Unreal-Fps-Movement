@@ -198,6 +198,7 @@ void AFPSCharacter::OnComponentHit(UPrimitiveComponent *HitComp, AActor *OtherAc
     if (IsWall(Hit.Normal))
     {
         GEngine->AddOnScreenDebugMessage(0, 5, FColor::Blue, TEXT("IsWall = True!"));
+        StartWallRun(Hit.Normal);
     }
 }
 // Makes smoothly camera tilt when sliding
@@ -230,10 +231,28 @@ void AFPSCharacter::GradualCrouch(float ZScale, const float &DeltaTime)
 
 bool AFPSCharacter::IsWall(const FVector &Normal)
 {
-    // return Fmath::IsNearlyEqual(Fmath::Abs(Normal.Z), 0)
-    return FMath::IsNearlyEqual(FMath::Abs(Normal.X), 1) || FMath::IsNearlyEqual(FMath::Abs(Normal.Y), 1);
+    return FMath::IsNearlyEqual(FMath::Abs(Normal.Z), 0);
+    // return FMath::IsNearlyEqual(FMath::Abs(Normal.X), 1) || FMath::IsNearlyEqual(FMath::Abs(Normal.Y), 1);
 }
-/*void AFPSCharacter::StartWallRun()
+void AFPSCharacter::StartWallRun(const FVector Normal)
 {
-    GetCharacterMovement->Velocity.Z = 0;
-}*/
+    if (!GetCharacterMovement()->IsMovingOnGround())
+    {
+        WallNormalVector = Normal;
+        if (!bIsWalltrunning)
+        {
+            GetCharacterMovement()->Velocity.Z = 0;
+            GetCharacterMovement()->Velocity.Z += 100.f;
+        }
+        bIsWalltrunning = true;
+    }
+}
+void AFPSCharacter::WallRun(const float &DeltaTime)
+{
+    if (bIsWalltrunning)
+    {
+        GetCharacterMovement()->Velocity += -WallNormalVector * DeltaTime * 1000;
+        GetCharacterMovement()->Velocity += FVector::UpVector * DeltaTime * GetCharacterMovement()->Mass *
+                                            WallRunGravity * GetCharacterMovement()->GetGravityDirection() * .4f;
+    }
+}
