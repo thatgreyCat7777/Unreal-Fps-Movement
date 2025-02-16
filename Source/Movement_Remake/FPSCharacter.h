@@ -77,9 +77,9 @@ private:
     UPROPERTY(EditAnywhere, Category = "Movement")
     float SlideFriction = .2f;
     UPROPERTY(EditAnywhere, Category = "Movement")
-    float WallRunGravity = 1;
+    float WallRunCounterGravity = 1;
     UPROPERTY(EditAnywhere, Category = "Movement")
-    float WallRunSpeed = 600.f;
+    float WallRunSpeed = 1000;
     UPROPERTY(EditAnywhere, Category = "Movement")
     float WallJumpForce = 300.f;
 

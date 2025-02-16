@@ -250,7 +250,8 @@ void AFPSCharacter::GradualCrouch(float ZScale, const float &DeltaTime)
 // Checks if the object the player collides with is a wall
 bool AFPSCharacter::IsWall(const FVector &Normal)
 {
-    return FMath::IsNearlyEqual(FMath::Abs(Normal.Z), 0);
+    return Normal.Z >= 0 && Normal.Z <= 0.5;
+    // return FMath::IsNearlyEqual(FMath::Abs(Normal.Z), 0);
     // return FMath::IsNearlyEqual(FMath::Abs(Normal.X), 1) || FMath::IsNearlyEqual(FMath::Abs(Normal.Y), 1);
 }
 // Starts the wall run
@@ -271,9 +272,9 @@ void AFPSCharacter::StartWallRun(const FVector Normal)
 // Called every frame when wall running
 void AFPSCharacter::WallRun(const float &DeltaTime)
 {
-    GetCharacterMovement()->Velocity += -WallNormalVector * DeltaTime * 1000;
-    GetCharacterMovement()->Velocity += FVector::UpVector * DeltaTime * GetCharacterMovement()->Mass * WallRunGravity *
-                                        GetCharacterMovement()->GetGravityDirection() * .4f * WallRunSpeed;
+    GetCharacterMovement()->Velocity += -WallNormalVector * DeltaTime * WallRunSpeed;
+    GetCharacterMovement()->Velocity += FVector::UpVector * DeltaTime * GetCharacterMovement()->Mass * WallRunCounterGravity *
+                                        GetCharacterMovement()->GetGravityDirection() * .4f;
 }
 // Stops the wall running
 void AFPSCharacter::StopWallRun()
