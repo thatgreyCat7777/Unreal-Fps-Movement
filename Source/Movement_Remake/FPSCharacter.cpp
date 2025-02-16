@@ -73,7 +73,7 @@ void AFPSCharacter::Tick(float DeltaTime)
     else
     {
         // Makes smoothly camera tilt when sliding
-        if (!bIsOnWall)
+        if (!bIsOnWall || !bIsWallrunning)
         {
             SmoothCameraTilt(0.f, SlideCameraTiltSpeed, DeltaTime);
         }
