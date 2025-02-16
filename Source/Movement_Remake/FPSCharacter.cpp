@@ -73,18 +73,23 @@ void AFPSCharacter::Tick(float DeltaTime)
     else
     {
         // Makes smoothly camera tilt when sliding
-        if (!bIsWallrunning)
+        if (!bIsOnWall)
         {
             SmoothCameraTilt(0.f, SlideCameraTiltSpeed, DeltaTime);
         }
         // Gradually changes scale of player to normal scale
         GradualCrouch(NormalScale.Z, DeltaTime);
     }
-    if (bIsWallrunning)
+    if (bIsWallrunning && bIsOnWall)
     {
+        if (FrameCounter % 20 == 0)
+        {
+            bIsOnWall = false;
+        }
         WallRun(DeltaTime);
         SmoothCameraTilt(WallRunTiltDirection * WallRunCameraTiltAngle, WallRunTransitionSpeed, DeltaTime);
     }
+    FrameCounter++;
 }
 
 // Called to bind functionality to input
@@ -213,11 +218,15 @@ void AFPSCharacter::OnComponentHitCharacter(UPrimitiveComponent *HitComp, AActor
     GEngine->AddOnScreenDebugMessage(0, 5, FColor::Emerald,
                                      FString::Printf(TEXT("Normal: %s, RightVector: %s"), *Hit.Normal.ToString(),
                                                      *GetActorRightVector().ToString()));
-    // Debug message to check
+    // Checks if there is a wall
     if (IsWall(Hit.Normal))
     {
-        // GEngine->AddOnScreenDebugMessage(0, 5, FColor::Blue, TEXT("IsWall = True!"));
-        StartWallRun(Hit.Normal);
+        if (!bIsWallrunning)
+        {
+            // GEngine->AddOnScreenDebugMessage(0, 5, FColor::Blue, TEXT("IsWall = True!"));
+            StartWallRun(Hit.Normal);
+        }
+        bIsOnWall = true;
     }
 }
 // Makes smoothly camera tilt when sliding
@@ -281,6 +290,7 @@ void AFPSCharacter::StopWallRun()
 {
     GetCharacterMovement()->Velocity += WallNormalVector * WallRunSpeed;
     bIsWallrunning = false;
+    bIsOnWall = false;
 }
 void AFPSCharacter::WallJump()
 {

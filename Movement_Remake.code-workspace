@@ -11,9 +11,7 @@
 	],
 	"settings": {
 		"typescript.tsc.autoDetect": "off",
-		"npm.autoDetect": "off",
-		"gitdoc.enabled": false,
-		"gitdoc.ai.enabled": false
+		"npm.autoDetect": "off"
 	},
 	"extensions": {
 		"recommendations": [

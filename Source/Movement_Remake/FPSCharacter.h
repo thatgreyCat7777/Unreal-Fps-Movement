@@ -110,6 +110,11 @@ private:
     FVector WallNormalVector;
     // Dot product between wall normal and player right vector
     float WallRunTiltDirection = 0;
+    // True when player is running on wall
+    bool bIsOnWall = false;
+    // Frame counter to help run code every few frames
+    // Note: Overflow of this number is intentional
+    uint8 FrameCounter = 0;
 
 private:
     // Function for fps camera rotations
@@ -143,4 +148,5 @@ private:
     void StopWallRun();
     UFUNCTION()
     void WallJump();
+    
 };
