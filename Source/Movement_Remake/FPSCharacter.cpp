@@ -294,7 +294,7 @@ void AFPSCharacter::StopWallRun()
     bIsWallrunning = false;
     bIsOnWall = false;
 }
-// Jumos off the wall when wall running
+// Jumps off the wall when wall running
 void AFPSCharacter::WallJump()
 {
     if (bIsWallrunning)
