@@ -297,6 +297,7 @@ void AFPSCharacter::StopWallRun()
 // Jumps off the wall when wall running
 void AFPSCharacter::WallJump()
 {
+    // TODO - Check if character is on wall
     if (bIsWallrunning)
     {
         StopWallRun();
