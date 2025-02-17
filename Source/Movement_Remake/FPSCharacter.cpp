@@ -306,3 +306,4 @@ void AFPSCharacter::WallJump()
             WallJumpForce);
     }
 }
+// TODO - Add vaulting functionality
