@@ -281,7 +281,9 @@ void AFPSCharacter::StartWallRun(const FVector Normal)
 // Called every frame when wall running
 void AFPSCharacter::WallRun(const float &DeltaTime)
 {
+    // Force to keep player on wall when wall running
     GetCharacterMovement()->Velocity += -WallNormalVector * DeltaTime * WallRunSpeed;
+    // Counter gravity to make player fall slower
     GetCharacterMovement()->Velocity += DeltaTime * GetCharacterMovement()->Mass * WallRunCounterGravity *
                                         -GetCharacterMovement()->GetGravityDirection() * .4f;
 }
@@ -292,6 +294,7 @@ void AFPSCharacter::StopWallRun()
     bIsWallrunning = false;
     bIsOnWall = false;
 }
+// Jumos off the wall when wall running
 void AFPSCharacter::WallJump()
 {
     if (bIsWallrunning)
