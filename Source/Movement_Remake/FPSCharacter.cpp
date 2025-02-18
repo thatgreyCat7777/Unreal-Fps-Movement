@@ -61,6 +61,7 @@ void AFPSCharacter::Tick(float DeltaTime)
         }
         // Gradually changes scale of player to crouch scale
         GradualCrouch(CrouchScale.Z, DeltaTime);
+        // TODO - Slide downhill only when player's forward vector is towards slope direction
         if (GetCharacterMovement()->IsMovingOnGround() && GetCharacterMovement()->IsJumpAllowed())
         {
             // Make sliding down slope faster
