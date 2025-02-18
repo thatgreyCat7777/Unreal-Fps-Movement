@@ -264,13 +264,11 @@ bool AFPSCharacter::IsWall(const FVector &Normal)
     // return FMath::IsNearlyEqual(FMath::Abs(Normal.Z), 0);
     // return FMath::IsNearlyEqual(FMath::Abs(Normal.X), 1) || FMath::IsNearlyEqual(FMath::Abs(Normal.Y), 1);
 }
-// TODO - Pass parameter by reference instead
 // Starts the wall run
-void AFPSCharacter::StartWallRun(const FVector Normal)
+void AFPSCharacter::StartWallRun(const FVector &Normal)
 {
     if (!GetCharacterMovement()->IsMovingOnGround())
     {
-        // TODO - Make Variable WallNormalVector be reference
         WallNormalVector = Normal;
         WallRunTiltDirection = FMath::Sign(FVector::DotProduct(GetActorRightVector(), WallNormalVector));
         if (!bIsWallrunning)

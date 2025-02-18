@@ -141,7 +141,7 @@ private:
     UFUNCTION()
     bool IsWall(const FVector &Normal);
     UFUNCTION()
-    void StartWallRun(const FVector Normal);
+    void StartWallRun(const FVector &Normal);
     UFUNCTION()
     void WallRun(const float &DeltaTime);
     UFUNCTION()
