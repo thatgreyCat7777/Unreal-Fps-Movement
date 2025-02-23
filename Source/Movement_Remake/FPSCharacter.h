@@ -157,5 +157,7 @@ private:
     void StopWallRun();
     UFUNCTION()
     void WallJump();
+    UFUNCTION()
+    bool VIsNearlyEqual(const FVector &A, const FVector &B);
     
 };

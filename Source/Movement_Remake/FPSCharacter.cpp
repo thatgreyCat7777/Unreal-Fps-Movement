@@ -247,7 +247,7 @@ void AFPSCharacter::GradualCrouch(const FVector &Scale, const float &DeltaTime)
 {
     FVector NewScale = GetActorScale3D();
     // TODO - Add function to check if all values in 2 vectors are nearly equal
-    if (!FMath::IsNearlyEqual(NewScale.Z, Scale.Z))
+    if (!VIsNearlyEqual(NewScale, Scale))
     {
         NewScale = FMath::VInterpTo(NewScale, CrouchScale, DeltaTime, CrouchTransitionSpeed);
         SetActorScale3D(NewScale);
@@ -309,5 +309,10 @@ void AFPSCharacter::WallJump()
             (FVector::UpVector * 1.7 + WallNormalVector * 2 + GetCharacterMovement()->Velocity.GetSafeNormal()) *
             WallJumpForce);
     }
+}
+// Checks if all components in a vector is nearly equal to each other
+bool AFPSCharacter::VIsNearlyEqual(const FVector &A, const FVector &B)
+{
+    return FMath::IsNearlyEqual(A.X, B.X) && FMath::IsNearlyEqual(A.Y, B.Y) && FMath::IsNearlyEqual(A.Z, B.Z);
 }
 // TODO - Add vaulting functionality
