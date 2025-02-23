@@ -82,6 +82,8 @@ private:
     float WallRunSpeed = 1000;
     UPROPERTY(EditAnywhere, Category = "Movement")
     float WallJumpForce = 300.f;
+    UPROPERTY(EditAnywhere, Category = "Movement")
+    float AirStrafeAcceleration = 500.f;
 
     // Transition Speeds
 
@@ -133,7 +135,7 @@ private:
     UFUNCTION()
     void SmoothCameraTilt(float Angle, const float &TiltSpeed, const float &DeltaTime);
     UFUNCTION()
-    void GradualCrouch(float ZScale, const float &DeltaTime);
+    void GradualCrouch(const FVector &Scale, const float &DeltaTime);
     // TODO - Implement Slide force function
     // UFUNCTION()
     // void ApplySlideForce();

@@ -60,7 +60,7 @@ void AFPSCharacter::Tick(float DeltaTime)
             SmoothCameraTilt(-3.f, SlideCameraTiltSpeed, DeltaTime);
         }
         // Gradually changes scale of player to crouch scale
-        GradualCrouch(CrouchScale.Z, DeltaTime);
+        GradualCrouch(CrouchScale, DeltaTime);
         // TODO - Slide downhill only when player's forward vector is towards slope direction
         if (GetCharacterMovement()->IsMovingOnGround() && GetCharacterMovement()->IsJumpAllowed())
         {
@@ -79,7 +79,7 @@ void AFPSCharacter::Tick(float DeltaTime)
             SmoothCameraTilt(0.f, SlideCameraTiltSpeed, DeltaTime);
         }
         // Gradually changes scale of player to normal scale
-        GradualCrouch(NormalScale.Z, DeltaTime);
+        GradualCrouch(NormalScale, DeltaTime);
     }
     if (bIsWallrunning && bIsOnWall)
     {
@@ -241,16 +241,16 @@ void AFPSCharacter::SmoothCameraTilt(float Angle, const float &TiltSpeed, const 
     }
 }
 // Gradually changes scale of player to crouch or normal scale
-void AFPSCharacter::GradualCrouch(float ZScale, const float &DeltaTime)
+void AFPSCharacter::GradualCrouch(const FVector &Scale, const float &DeltaTime)
 {
     FVector NewScale = GetActorScale3D();
-    if (!FMath::IsNearlyEqual(NewScale.Z, ZScale))
+    if (!FMath::IsNearlyEqual(NewScale.Z, Scale))
     {
-        NewScale.Z = FMath::FInterpTo(NewScale.Z, ZScale, DeltaTime, CrouchTransitionSpeed);
+        NewScale = FMath::VInterpTo(NewScale, CrouchScale, DeltaTime, CrouchTransitionSpeed);
         SetActorScale3D(NewScale);
     }
     FVector NewLocation = GetActorLocation();
-    float TargetLocationZ = NewLocation.Z + (NormalScale.Z - ZScale) * (bIsCrouching ? -1 : 1);
+    float TargetLocationZ = NewLocation.Z + (NormalScale.Z - Scale.Z) * (bIsCrouching ? -1 : 1);
     if (!FMath::IsNearlyEqual(NewLocation.Z, TargetLocationZ))
     {
         NewLocation.Z = FMath::FInterpTo(NewLocation.Z, TargetLocationZ, DeltaTime, CrouchTransitionSpeed);
