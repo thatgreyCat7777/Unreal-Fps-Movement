@@ -82,8 +82,15 @@ private:
     float WallRunSpeed = 1000;
     UPROPERTY(EditAnywhere, Category = "Movement")
     float WallJumpForce = 300.f;
+    // TODO - Implement air strafing function for this
     UPROPERTY(EditAnywhere, Category = "Movement")
     float AirStrafeAcceleration = 500.f;
+    // TODO - Implement modified walk function for this
+    UPROPERTY(EditAnywhere, Category = "Movement")
+    float MaxWalkSpeed = 600.f;
+    // Rate at which player's velocity is interpolated to wish velocity
+    UPROPERTY(EditAnywhere, Category = "Movement")
+    float GroundAcceleration = 10.f;
 
     // Transition Speeds
 

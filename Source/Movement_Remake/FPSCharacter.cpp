@@ -118,6 +118,8 @@ void AFPSCharacter::Walk(const FInputActionInstance &Instance)
 {
     // Gets value of input
     FVector2D Input = Instance.GetValue().Get<FVector2D>();
+
+    // TODO - Rework walking functionalty
     // Adds input corresponding to character's forward and right vector
     AddMovementInput(GetActorForwardVector(), Input.Y);
     AddMovementInput(GetActorRightVector(), Input.X);
@@ -244,7 +246,8 @@ void AFPSCharacter::SmoothCameraTilt(float Angle, const float &TiltSpeed, const 
 void AFPSCharacter::GradualCrouch(const FVector &Scale, const float &DeltaTime)
 {
     FVector NewScale = GetActorScale3D();
-    if (!FMath::IsNearlyEqual(NewScale.Z, Scale))
+    // TODO - Add function to check if all values in 2 vectors are nearly equal
+    if (!FMath::IsNearlyEqual(NewScale.Z, Scale.Z))
     {
         NewScale = FMath::VInterpTo(NewScale, CrouchScale, DeltaTime, CrouchTransitionSpeed);
         SetActorScale3D(NewScale);
