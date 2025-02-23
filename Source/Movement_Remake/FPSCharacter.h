@@ -142,7 +142,7 @@ private:
     UFUNCTION()
     void SmoothCameraTilt(float Angle, const float &TiltSpeed, const float &DeltaTime);
     UFUNCTION()
-    void GradualCrouch(const FVector &Scale, const float &DeltaTime);
+    void GradualCrouch(const float &Scale, const float &DeltaTime);
     // TODO - Implement Slide force function
     // UFUNCTION()
     // void ApplySlideForce();
@@ -157,7 +157,5 @@ private:
     void StopWallRun();
     UFUNCTION()
     void WallJump();
-    UFUNCTION()
-    bool VIsNearlyEqual(const FVector &A, const FVector &B);
     
 };

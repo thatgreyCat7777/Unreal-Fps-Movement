@@ -60,7 +60,7 @@ void AFPSCharacter::Tick(float DeltaTime)
             SmoothCameraTilt(-3.f, SlideCameraTiltSpeed, DeltaTime);
         }
         // Gradually changes scale of player to crouch scale
-        GradualCrouch(CrouchScale, DeltaTime);
+        GradualCrouch(CrouchScale.Z, DeltaTime);
         // TODO - Slide downhill only when player's forward vector is towards slope direction
         if (GetCharacterMovement()->IsMovingOnGround() && GetCharacterMovement()->IsJumpAllowed())
         {
@@ -79,7 +79,7 @@ void AFPSCharacter::Tick(float DeltaTime)
             SmoothCameraTilt(0.f, SlideCameraTiltSpeed, DeltaTime);
         }
         // Gradually changes scale of player to normal scale
-        GradualCrouch(NormalScale, DeltaTime);
+        GradualCrouch(NormalScale.Z, DeltaTime);
     }
     if (bIsWallrunning && bIsOnWall)
     {
@@ -118,8 +118,6 @@ void AFPSCharacter::Walk(const FInputActionInstance &Instance)
 {
     // Gets value of input
     FVector2D Input = Instance.GetValue().Get<FVector2D>();
-
-    // TODO - Rework walking functionalty
     // Adds input corresponding to character's forward and right vector
     AddMovementInput(GetActorForwardVector(), Input.Y);
     AddMovementInput(GetActorRightVector(), Input.X);
@@ -243,17 +241,16 @@ void AFPSCharacter::SmoothCameraTilt(float Angle, const float &TiltSpeed, const 
     }
 }
 // Gradually changes scale of player to crouch or normal scale
-void AFPSCharacter::GradualCrouch(const FVector &Scale, const float &DeltaTime)
+void AFPSCharacter::GradualCrouch(const float &ZScale, const float &DeltaTime)
 {
     FVector NewScale = GetActorScale3D();
-    // TODO - Add function to check if all values in 2 vectors are nearly equal
-    if (!VIsNearlyEqual(NewScale, Scale))
+    if (!FMath::IsNearlyEqual(NewScale.Z, ZScale))
     {
-        NewScale = FMath::VInterpTo(NewScale, CrouchScale, DeltaTime, CrouchTransitionSpeed);
+        NewScale.Z = FMath::FInterpTo(NewScale.Z, ZScale, DeltaTime, CrouchTransitionSpeed);
         SetActorScale3D(NewScale);
     }
     FVector NewLocation = GetActorLocation();
-    float TargetLocationZ = NewLocation.Z + (NormalScale.Z - Scale.Z) * (bIsCrouching ? -1 : 1);
+    float TargetLocationZ = NewLocation.Z + (NormalScale.Z - ZScale) * (bIsCrouching ? -1 : 1);
     if (!FMath::IsNearlyEqual(NewLocation.Z, TargetLocationZ))
     {
         NewLocation.Z = FMath::FInterpTo(NewLocation.Z, TargetLocationZ, DeltaTime, CrouchTransitionSpeed);
@@ -309,10 +306,5 @@ void AFPSCharacter::WallJump()
             (FVector::UpVector * 1.7 + WallNormalVector * 2 + GetCharacterMovement()->Velocity.GetSafeNormal()) *
             WallJumpForce);
     }
-}
-// Checks if all components in a vector is nearly equal to each other
-bool AFPSCharacter::VIsNearlyEqual(const FVector &A, const FVector &B)
-{
-    return FMath::IsNearlyEqual(A.X, B.X) && FMath::IsNearlyEqual(A.Y, B.Y) && FMath::IsNearlyEqual(A.Z, B.Z);
 }
 // TODO - Add vaulting functionality
