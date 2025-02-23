@@ -231,7 +231,7 @@ void AFPSCharacter::OnComponentHitCharacter(UPrimitiveComponent *HitComp, AActor
     }
 }
 // Makes smoothly camera tilt when sliding
-void AFPSCharacter::SmoothCameraTilt(float Angle, const float &TiltSpeed, const float &DeltaTime)
+void AFPSCharacter::SmoothCameraTilt(const float &Angle, const float &TiltSpeed, const float &DeltaTime)
 {
     FRotator CameraTilt = CameraComp->GetRelativeRotation();
     if (!FMath::IsNearlyEqual(CameraTilt.Roll, Angle))

@@ -140,7 +140,7 @@ private:
     void OnComponentHitCharacter(UPrimitiveComponent *HitComp, AActor *OtherActor, UPrimitiveComponent *OtherComp,
                                  FVector NormalImpulse, const FHitResult &Hit);
     UFUNCTION()
-    void SmoothCameraTilt(float Angle, const float &TiltSpeed, const float &DeltaTime);
+    void SmoothCameraTilt(const float &Angle, const float &TiltSpeed, const float &DeltaTime);
     UFUNCTION()
     void GradualCrouch(const float &Scale, const float &DeltaTime);
     // TODO - Implement Slide force function
