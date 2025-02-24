@@ -307,6 +307,7 @@ void AFPSCharacter::WallJump()
             WallJumpForce);
     }
 }
+// TODO - Add function to apply initial slide force
 // TODO - Add camera shake when player lands
 // TODO - Add double jumping
 // TODO - Add vaulting functionality
