@@ -307,7 +307,16 @@ void AFPSCharacter::WallJump()
             WallJumpForce);
     }
 }
-// TODO - Add function to apply initial slide force
+// TODO - Add function to apply gradual slide force
+void AFPSCharacter::GradualSlideForce(const float &DeltaTime)
+{
+    // Velocity vector to add to player
+    FVector AddVelocity = FMath::FInterpTo(SlideForce, 0.f, DeltaTime, 20.f) * GetActorForwardVector();
+    if (FMath::IsNearlyEqual(AddVelocity.SizeSquared(), 0.f))
+    {
+        GetCharacterMovement()->Velocity += AddVelocity;
+    }
+}
 // TODO - Add camera shake when player lands
 // TODO - Add double jumping
 // TODO - Add vaulting functionality

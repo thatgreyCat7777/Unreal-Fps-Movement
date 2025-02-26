@@ -121,6 +121,9 @@ private:
     float WallRunTiltDirection = 0;
     // True when player is running on wall
     bool bIsOnWall = false;
+    // TODO - Check if this bool variable is needed in the implementation
+    // True when player slide force is being applied
+    bool bIsSliding = false;
     // Frame counter to help run code every few frames
     // Note: Overflow of this number is intentional
     uint8 FrameCounter = 0;
@@ -157,5 +160,7 @@ private:
     void StopWallRun();
     UFUNCTION()
     void WallJump();
+    UFUNCTION()
+    void GradualSlideForce(const float &DeltaTime);
     
 };
