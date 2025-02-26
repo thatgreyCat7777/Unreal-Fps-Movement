@@ -12,7 +12,8 @@
 	"settings": {
 		"typescript.tsc.autoDetect": "off",
 		"npm.autoDetect": "off",
-		"unreal-clangd.editor.parameterHints": "needed"
+		"unreal-clangd.editor.parameterHints": "needed",
+		"editor.linkedEditing": true
 	},
 	"extensions": {
 		"recommendations": [
