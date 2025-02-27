@@ -73,6 +73,12 @@ private:
     // Slide force impulse applied when character slides
     UPROPERTY(EditAnywhere, Category = "Movement")
     float SlideForce = 1000.f;
+    // Slide force applied over time
+    UPROPERTY(EditAnywhere, Category = "Movement")
+    float GradualSlideForce = 200.f;
+    // Speed at which gradual slide force interps to 0
+    UPROPERTY(EditAnywhere, Category = "Movement")
+    float GradualSlideForceTime = 20.f;
     // Ground friction when sliding
     UPROPERTY(EditAnywhere, Category = "Movement")
     float SlideFriction = .2f;
@@ -124,6 +130,8 @@ private:
     // TODO - Check if this bool variable is needed in the implementation
     // True when player slide force is being applied
     bool bIsSliding = false;
+    // Keeps track of velocity to add when applying gradual slide force
+    float AddVelocityMag = SlideForce;
     // Frame counter to help run code every few frames
     // Note: Overflow of this number is intentional
     uint8 FrameCounter = 0;
@@ -161,6 +169,6 @@ private:
     UFUNCTION()
     void WallJump();
     UFUNCTION()
-    void GradualSlideForce(const float &DeltaTime);
+    void GradualSlide(const float &DeltaTime);
     
 };

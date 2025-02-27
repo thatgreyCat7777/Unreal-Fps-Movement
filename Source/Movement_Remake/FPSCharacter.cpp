@@ -69,6 +69,7 @@ void AFPSCharacter::Tick(float DeltaTime)
                 FVector::VectorPlaneProject(FVector::DownVector,
                                             GetCharacterMovement()->CurrentFloor.HitResult.Normal) *
                 DeltaTime * 10000.f;
+            GradualSlide(DeltaTime);
         }
     }
     else
@@ -165,6 +166,7 @@ void AFPSCharacter::StartCrouch(const FInputActionInstance &Instance)
             // Log message for debugging
             // GEngine->AddOnScreenDebugMessage(0, 5, FColor::Green, TEXT("Force added"));
             bAppliedSlideForce = true;
+            AddVelocityMag = GradualSlideForce;
         }
     }
 }
@@ -308,13 +310,18 @@ void AFPSCharacter::WallJump()
     }
 }
 // TODO - Add function to apply gradual slide force
-void AFPSCharacter::GradualSlideForce(const float &DeltaTime)
+void AFPSCharacter::GradualSlide(const float &DeltaTime)
 {
     // Velocity vector to add to player
-    FVector AddVelocity = FMath::FInterpTo(SlideForce, 0.f, DeltaTime, 20.f) * GetActorForwardVector();
-    if (FMath::IsNearlyEqual(AddVelocity.SizeSquared(), 0.f))
+    AddVelocityMag = FMath::FInterpTo(AddVelocityMag, 0.f, DeltaTime, 20.f);
+
+    // GEngine->AddOnScreenDebugMessage(INDEX_NONE, 5.f, FColor::Red,
+    //                                  FString::Printf(TEXT("AddVelocityMag: %d"), AddVelocityMag));
+
+    // Checks if adding velocity is needed
+    if (!FMath::IsNearlyEqual(AddVelocityMag, 0))
     {
-        GetCharacterMovement()->Velocity += AddVelocity;
+        GetCharacterMovement()->Velocity += AddVelocityMag * GetActorForwardVector();
     }
 }
 // TODO - Add camera shake when player lands
