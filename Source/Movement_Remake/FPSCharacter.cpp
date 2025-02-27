@@ -321,7 +321,7 @@ void AFPSCharacter::GradualSlide(const float &DeltaTime)
     // Checks if adding velocity is needed
     if (!FMath::IsNearlyEqual(AddVelocityMag, 0))
     {
-        GetCharacterMovement()->Velocity += AddVelocityMag * GetActorForwardVector();
+        GetCharacterMovement()->Velocity += AddVelocityMag * GetActorForwardVector() * DeltaTime * 60.f;
     }
 }
 // TODO - Add camera shake when player lands
