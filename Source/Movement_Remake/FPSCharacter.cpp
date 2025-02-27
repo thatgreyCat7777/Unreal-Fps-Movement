@@ -316,12 +316,12 @@ void AFPSCharacter::GradualSlide(const float &DeltaTime)
     AddVelocityMag = FMath::FInterpTo(AddVelocityMag, 0.f, DeltaTime, 20.f);
 
     // GEngine->AddOnScreenDebugMessage(INDEX_NONE, 5.f, FColor::Red,
-    //                                  FString::Printf(TEXT("AddVelocityMag: %d"), AddVelocityMag));
+    //                                  FString::Printf(TEXT("AddVelocityMag: %d"), AddVelocityMag)); 
 
     // Checks if adding velocity is needed
     if (!FMath::IsNearlyEqual(AddVelocityMag, 0))
     {
-        GetCharacterMovement()->Velocity += AddVelocityMag * GetActorForwardVector() * DeltaTime * 60.f;
+        GetCharacterMovement()->Velocity += AddVelocityMag * GetActorForwardVector() * DeltaTime * 60;
     }
 }
 // TODO - Add camera shake when player lands

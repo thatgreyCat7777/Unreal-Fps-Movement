@@ -127,11 +127,10 @@ private:
     float WallRunTiltDirection = 0;
     // True when player is running on wall
     bool bIsOnWall = false;
-    // TODO - Check if this bool variable is needed in the implementation
-    // True when player slide force is being applied
-    bool bIsSliding = false;
     // Keeps track of velocity to add when applying gradual slide force
     float AddVelocityMag = SlideForce;
+    // TODO - Use Vector to keep track of player movement input and apply it to gradual slide force
+    FVector MovementInput;
     // Frame counter to help run code every few frames
     // Note: Overflow of this number is intentional
     uint8 FrameCounter = 0;
