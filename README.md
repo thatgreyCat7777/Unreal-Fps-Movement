@@ -6,5 +6,4 @@ Developed with Unreal Engine 5
 
 An project for creating movement for my FPS game
 
-https://github.com/user-attachments/assets/dbf672f5-1efb-4ac0-9baa-d34fc619fb73
-
+https://github.com/user-attachments/assets/95d9c40a-0e79-40c3-8d78-8c31d98ab764
