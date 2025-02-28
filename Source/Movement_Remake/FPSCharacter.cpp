@@ -84,8 +84,8 @@ void AFPSCharacter::Tick(float DeltaTime)
     }
     if (bIsWallrunning && bIsOnWall)
     {
-        // Triggers every 1 / 3 of a second 
-        if (FrameCounter % 3 / DeltaTime == 0)
+        // Triggers every 1 / 5 of a second 
+        if (FrameCounter % 5 / DeltaTime == 0)
         {
             bIsOnWall = false;
         }
