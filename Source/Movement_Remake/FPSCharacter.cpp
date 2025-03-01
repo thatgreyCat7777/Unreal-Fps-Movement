@@ -61,14 +61,18 @@ void AFPSCharacter::Tick(float DeltaTime)
         }
         // Gradually changes scale of player to crouch scale
         GradualCrouch(CrouchScale.Z, DeltaTime);
-        // TODO - Slide downhill only when player's forward vector is towards slope direction
         if (GetCharacterMovement()->IsMovingOnGround() && GetCharacterMovement()->IsJumpAllowed())
         {
-            // Make sliding down slope faster
+            // Applies force to speed up player when sliding down slopes
+
+            // Projected vector on slope
+            FVector ProjectedVector =
+                FVector::VectorPlaneProject(FVector::DownVector, GetCharacterMovement()->CurrentFloor.HitResult.Normal);
+            // Adds downwards force based off player's allignment off slope
             GetCharacterMovement()->Velocity +=
-                FVector::VectorPlaneProject(FVector::DownVector,
-                                            GetCharacterMovement()->CurrentFloor.HitResult.Normal) *
-                DeltaTime * 10000.f;
+                FMath::Abs(FVector::DotProduct(GetActorForwardVector(), ProjectedVector.GetSafeNormal2D())) *
+                ProjectedVector * DeltaTime * 10000.f;
+            // Applies gradual slide force to counter friction
             GradualSlide(DeltaTime);
         }
     }
@@ -84,7 +88,7 @@ void AFPSCharacter::Tick(float DeltaTime)
     }
     if (bIsWallrunning && bIsOnWall)
     {
-        // Triggers every 1 / 5 of a second 
+        // Triggers every 1 / 5 of a second
         if (FrameCounter % 5 / DeltaTime == 0)
         {
             bIsOnWall = false;
@@ -317,7 +321,7 @@ void AFPSCharacter::GradualSlide(const float &DeltaTime)
     AddVelocityMag = FMath::FInterpTo(AddVelocityMag, 0.f, DeltaTime, 20.f);
 
     // GEngine->AddOnScreenDebugMessage(INDEX_NONE, 5.f, FColor::Red,
-    //                                  FString::Printf(TEXT("AddVelocityMag: %d"), AddVelocityMag)); 
+    //                                  FString::Printf(TEXT("AddVelocityMag: %d"), AddVelocityMag));
 
     // Checks if adding velocity is needed
     if (!FMath::IsNearlyEqual(AddVelocityMag, 0))
