@@ -61,6 +61,7 @@ void AFPSCharacter::Tick(float DeltaTime)
         }
         // Gradually changes scale of player to crouch scale
         GradualCrouch(CrouchScale.Z, DeltaTime);
+        // TODO - Add a boolean that decides whether to apply slope slide force 
         if (GetCharacterMovement()->IsMovingOnGround() && GetCharacterMovement()->IsJumpAllowed())
         {
             // Applies force to speed up player when sliding down slopes
@@ -314,8 +315,9 @@ void AFPSCharacter::WallJump()
             WallJumpForce);
     }
 }
-// TODO - Add function to apply gradual slide force
-void AFPSCharacter::GradualSlide(const float &DeltaTime)
+// Applies gradual slide force to player
+// Returns true when still applying force and false when it has stopped
+bool AFPSCharacter::GradualSlide(const float &DeltaTime)
 {
     // Velocity vector to add to player
     AddVelocityMag = FMath::FInterpTo(AddVelocityMag, 0.f, DeltaTime, 20.f);
@@ -327,6 +329,11 @@ void AFPSCharacter::GradualSlide(const float &DeltaTime)
     if (!FMath::IsNearlyEqual(AddVelocityMag, 0))
     {
         GetCharacterMovement()->Velocity += AddVelocityMag * GetActorForwardVector() * DeltaTime * 60;
+        return true;
+    }
+    else
+    {
+        return false;
     }
 }
 // TODO - Add camera shake when player lands

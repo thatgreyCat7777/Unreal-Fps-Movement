@@ -168,6 +168,6 @@ private:
     UFUNCTION()
     void WallJump();
     UFUNCTION()
-    void GradualSlide(const float &DeltaTime);
+    bool GradualSlide(const float &DeltaTime);
     
 };
