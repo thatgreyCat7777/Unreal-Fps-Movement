@@ -42,11 +42,15 @@ AFPSCharacter::AFPSCharacter()
     GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
     GetCharacterMovement()->AirControl = 1;
     GetCharacterMovement()->FormerBaseVelocityDecayHalfLife = 1;
+    GetCharacterMovement()->MaxStepHeight = 50;
     GetMesh()->bAutoActivate = false;
     CameraComp->FieldOfView = 140.f;
     GetCapsuleComponent()->SetCapsuleHalfHeight(50);
     GetCapsuleComponent()->SetCapsuleRadius(26);
     GetCapsuleComponent()->SetCollisionProfileName(TEXT("Pawn"));
+    SpringArm->TargetArmLength = 0;
+    SpringArm->bEnableCameraLag = true;
+    SpringArm->CameraLagSpeed = 100;
 }
 
 // Called when the game starts or when spawned
