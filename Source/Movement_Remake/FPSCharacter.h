@@ -66,7 +66,7 @@ private:
 
     // Normal Walkspeed
     UPROPERTY(EditAnywhere, Category = "Movement")
-    float WalkSpeed = 600.f;
+    float WalkSpeed = 1000.f;
     // Crouched Walkspeed
     UPROPERTY(EditAnywhere, Category = "Movement")
     float CrouchSpeed = 300.f;

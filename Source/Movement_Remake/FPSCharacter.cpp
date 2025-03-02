@@ -2,6 +2,7 @@
 
 #include "FPSCharacter.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/SkeletalMeshComponent.h"
 #include "Containers/UnrealString.h"
 #include "Engine/Engine.h"
 #include "EnhancedInputComponent.h"
@@ -36,14 +37,23 @@ AFPSCharacter::AFPSCharacter()
     // Setup camera
     CameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
     CameraComp->SetupAttachment(SpringArm);
+
+    // Sets character's max walkspeed to default set in the class
+    GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
+    GetCharacterMovement()->AirControl = 1;
+    GetCharacterMovement()->FormerBaseVelocityDecayHalfLife = 1;
+    GetMesh()->bAutoActivate = false;
+    CameraComp->FieldOfView = 140.f;
+    GetCapsuleComponent()->SetCapsuleHalfHeight(50);
+    GetCapsuleComponent()->SetCapsuleRadius(26);
+    GetCapsuleComponent()->SetCollisionProfileName(TEXT("Pawn"));
 }
 
 // Called when the game starts or when spawned
 void AFPSCharacter::BeginPlay()
 {
     Super::BeginPlay();
-    // Sets character's max walkspeed to default set in the class
-    GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
+    
     // Links oncomponenthit function
     GetCapsuleComponent()->OnComponentHit.AddDynamic(this, &AFPSCharacter::OnComponentHitCharacter);
 }
