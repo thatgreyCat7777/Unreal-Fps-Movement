@@ -329,6 +329,7 @@ void AFPSCharacter::WallJump()
             WallJumpForce);
     }
 }
+// TODO - Check if returning bool is needed
 // Applies gradual slide force to player
 // Returns true when still applying force and false when it has stopped
 bool AFPSCharacter::GradualSlide(const float &DeltaTime)
