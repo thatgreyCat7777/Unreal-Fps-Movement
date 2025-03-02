@@ -130,7 +130,7 @@ private:
     // Keeps track of velocity to add when applying gradual slide force
     float AddVelocityMag = SlideForce;
     // TODO - Use Vector to keep track of player movement input and apply it to gradual slide force
-    FVector MovementInput;
+    FVector MovementInput = {0,0,0};
     // Frame counter to help run code every few frames
     // Note: Overflow of this number is intentional
     uint8 FrameCounter = 0;
