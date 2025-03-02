@@ -75,7 +75,6 @@ void AFPSCharacter::Tick(float DeltaTime)
         }
         // Gradually changes scale of player to crouch scale
         GradualCrouch(CrouchScale.Z, DeltaTime);
-        // TODO - Add a boolean that decides whether to apply slope slide force
         if (GetCharacterMovement()->IsMovingOnGround() && GetCharacterMovement()->IsJumpAllowed())
         {
             // Applies force to speed up player when sliding down slopes
@@ -139,7 +138,6 @@ void AFPSCharacter::Walk(const FInputActionInstance &Instance)
 {
     // Gets value of input
     FVector2D Input = Instance.GetValue().Get<FVector2D>();
-    MovementInput = GetActorForwardVector() * Input.Y + GetActorRightVector() * Input.X;
     // Adds input corresponding to character's forward and right vector
     AddMovementInput(GetActorForwardVector(), Input.Y);
     AddMovementInput(GetActorRightVector(), Input.X);
@@ -183,7 +181,7 @@ void AFPSCharacter::StartCrouch(const FInputActionInstance &Instance)
         if (GetCharacterMovement()->IsMovingOnGround())
         {
             // Adds impulse force to character
-            GetCharacterMovement()->Velocity += MovementInput.GetSafeNormal2D() * SlideForce;
+            GetCharacterMovement()->Velocity += GetCharacterMovement()->Velocity.GetSafeNormal2D() * SlideForce;
             // Log message for debugging
             // GEngine->AddOnScreenDebugMessage(0, 5, FColor::Green, TEXT("Force added"));
             bAppliedSlideForce = true;
@@ -222,7 +220,7 @@ void AFPSCharacter::OnComponentHitCharacter(UPrimitiveComponent *HitComp, AActor
             if (GetCharacterMovement()->Velocity.Size() > 100.f && !bAppliedSlideForce)
             {
                 // Adds impulse force to character
-                GetCharacterMovement()->Velocity += MovementInput.GetSafeNormal2D() * SlideForce;
+                GetCharacterMovement()->Velocity += GetCharacterMovement()->Velocity.GetSafeNormal2D() * SlideForce;
                 bAppliedSlideForce = true;
                 AddVelocityMag = GradualSlideForce;
                 // GEngine->AddOnScreenDebugMessage(0, 5.0f, FColor::Cyan, TEXT("JumpSlide"));
@@ -344,7 +342,7 @@ bool AFPSCharacter::GradualSlide(const float &DeltaTime)
     // Checks if adding velocity is needed
     if (!FMath::IsNearlyEqual(AddVelocityMag, 0))
     {
-        GetCharacterMovement()->Velocity += AddVelocityMag * MovementInput.GetSafeNormal2D() * DeltaTime * 60;
+        GetCharacterMovement()->Velocity += AddVelocityMag * GetCharacterMovement()->Velocity.GetSafeNormal2D() * DeltaTime * 60;
         return true;
     }
     else

@@ -88,15 +88,6 @@ private:
     float WallRunSpeed = 1000;
     UPROPERTY(EditAnywhere, Category = "Movement")
     float WallJumpForce = 300.f;
-    // TODO - Implement air strafing function for this
-    UPROPERTY(EditAnywhere, Category = "Movement")
-    float AirStrafeAcceleration = 500.f;
-    // TODO - Implement modified walk function for this
-    UPROPERTY(EditAnywhere, Category = "Movement")
-    float MaxWalkSpeed = 600.f;
-    // Rate at which player's velocity is interpolated to wish velocity
-    UPROPERTY(EditAnywhere, Category = "Movement")
-    float GroundAcceleration = 10.f;
 
     // Transition Speeds
 
@@ -129,8 +120,6 @@ private:
     bool bIsOnWall = false;
     // Keeps track of velocity to add when applying gradual slide force
     float AddVelocityMag = SlideForce;
-    // TODO - Use Vector to keep track of player movement input and apply it to gradual slide force
-    FVector MovementInput = {0,0,0};
     // Frame counter to help run code every few frames
     // Note: Overflow of this number is intentional
     uint8 FrameCounter = 0;
