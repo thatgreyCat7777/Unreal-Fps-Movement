@@ -50,7 +50,7 @@ AFPSCharacter::AFPSCharacter()
     GetCapsuleComponent()->SetCollisionProfileName(TEXT("Pawn"));
     SpringArm->TargetArmLength = 0;
     SpringArm->bEnableCameraLag = true;
-    SpringArm->CameraLagSpeed = 100;
+    SpringArm->CameraLagSpeed = 200;
 }
 
 // Called when the game starts or when spawned
@@ -329,7 +329,6 @@ void AFPSCharacter::WallJump()
             WallJumpForce);
     }
 }
-// TODO - Check if returning bool is needed
 // Applies gradual slide force to player
 // Returns true when still applying force and false when it has stopped
 bool AFPSCharacter::GradualSlide(const float &DeltaTime)
