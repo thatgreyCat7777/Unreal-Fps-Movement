@@ -350,6 +350,6 @@ bool AFPSCharacter::GradualSlide(const float &DeltaTime)
         return false;
     }
 }
-// TODO - Add camera shake when player lands
-// TODO - Add double jumping
-// TODO - Add vaulting functionality
+// TODO #2 - Add camera shake when player lands
+// TODO #3 - Add double jumping
+// TODO #4 - Add vaulting functionality
