@@ -8,11 +8,13 @@
 #include "EnhancedInputComponent.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "GameFramework/PlayerController.h"
 #include "HAL/Platform.h"
 #include "InputTriggers.h"
 #include "Math/Color.h"
 #include "Math/MathFwd.h"
 #include "Math/UnrealMathUtility.h"
+#include "Misc/CoreMiscDefines.h"
 #include "Templates/Casts.h"
 #include "Delegates/Delegate.h"
 
@@ -60,6 +62,8 @@ void AFPSCharacter::BeginPlay()
 
     // Links oncomponenthit function
     GetCapsuleComponent()->OnComponentHit.AddDynamic(this, &AFPSCharacter::OnComponentHitCharacter);
+    // Links onLanded function
+    LandedDelegate.AddDynamic(this, &AFPSCharacter::OnJumpLand);
 }
 
 // Called every frame
@@ -329,6 +333,7 @@ void AFPSCharacter::WallJump()
             WallJumpForce);
     }
 }
+// TODO - Check if function requires bool
 // Applies gradual slide force to player
 // Returns true when still applying force and false when it has stopped
 bool AFPSCharacter::GradualSlide(const float &DeltaTime)
@@ -342,12 +347,28 @@ bool AFPSCharacter::GradualSlide(const float &DeltaTime)
     // Checks if adding velocity is needed
     if (!FMath::IsNearlyEqual(AddVelocityMag, 0))
     {
-        GetCharacterMovement()->Velocity += AddVelocityMag * GetCharacterMovement()->Velocity.GetSafeNormal2D() * DeltaTime * 60;
+        GetCharacterMovement()->Velocity +=
+            AddVelocityMag * GetCharacterMovement()->Velocity.GetSafeNormal2D() * DeltaTime * 60;
         return true;
     }
     else
     {
         return false;
+    }
+}
+// TODO #5 - Improve on camera landing camera shake 
+void AFPSCharacter::OnJumpLand(const FHitResult &Hit)
+{
+    if (float FallSpeed = FMath::Abs(GetCharacterMovement()->Velocity.Z) > FallSpeedThreshold)
+    {
+        float ShakeScale = FMath::Clamp(FallSpeed / FallSpeedThreshold, 1.f, 2.f);
+
+        if (APlayerController *PC = Cast<APlayerController>(GetController()))
+        {
+            GEngine->AddOnScreenDebugMessage(INDEX_NONE, 5, FColor::Red,
+                                             FString::Printf(TEXT("ShakeScale = %f"), ShakeScale));
+            PC->ClientStartCameraShake(LandingCameraShake, ShakeScale);
+        }
     }
 }
 // TODO #2 - Add camera shake when player lands

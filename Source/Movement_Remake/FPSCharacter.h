@@ -103,6 +103,12 @@ private:
     // Angle camera tilts at when wall running
     UPROPERTY(EditAnywhere, Category = "Transitions")
     float WallRunCameraTiltAngle = 10.f;
+    // Landing camera shake object
+    UPROPERTY(EditAnywhere, Category = "Camera Shake")
+    TSubclassOf<UCameraShakeBase> LandingCameraShake;
+    // Fall speed required for camera shake
+    UPROPERTY(EditAnywhere, Category = "Camera Shake")
+    float FallSpeedThreshold = 1200.f;
 
     // States to keep track of
 
@@ -158,5 +164,6 @@ private:
     void WallJump();
     UFUNCTION()
     bool GradualSlide(const float &DeltaTime);
-    
+    UFUNCTION()
+    void OnJumpLand(const FHitResult &Hit);
 };
