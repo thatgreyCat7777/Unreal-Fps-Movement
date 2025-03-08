@@ -14,7 +14,6 @@
 #include "Math/Color.h"
 #include "Math/MathFwd.h"
 #include "Math/UnrealMathUtility.h"
-#include "Misc/CoreMiscDefines.h"
 #include "Templates/Casts.h"
 #include "Delegates/Delegate.h"
 
@@ -42,7 +41,7 @@ AFPSCharacter::AFPSCharacter()
 
     // Sets character's max walkspeed to default set in the class
     GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
-    GetCharacterMovement()->AirControl = 1;
+    GetCharacterMovement()->AirControl = .7f;
     GetCharacterMovement()->FormerBaseVelocityDecayHalfLife = 1;
     GetCharacterMovement()->MaxStepHeight = 50;
     GetMesh()->bAutoActivate = false;
@@ -53,6 +52,7 @@ AFPSCharacter::AFPSCharacter()
     SpringArm->TargetArmLength = 0;
     SpringArm->bEnableCameraLag = true;
     SpringArm->CameraLagSpeed = 200;
+    bIsSpatiallyLoaded = false;
 }
 
 // Called when the game starts or when spawned
@@ -328,9 +328,11 @@ void AFPSCharacter::WallJump()
     if (bIsWallrunning && bIsOnWall)
     {
         StopWallRun();
+        FVector InitVelocity = GetCharacterMovement()->Velocity;
         GetCharacterMovement()->Launch(
             (FVector::UpVector * 1.7 + WallNormalVector * 2 + GetCharacterMovement()->Velocity.GetSafeNormal()) *
             WallJumpForce);
+        GetCharacterMovement()->Velocity += InitVelocity;
     }
 }
 // TODO - Check if function requires bool
