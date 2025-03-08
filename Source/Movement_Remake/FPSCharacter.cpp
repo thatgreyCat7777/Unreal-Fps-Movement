@@ -356,21 +356,11 @@ bool AFPSCharacter::GradualSlide(const float &DeltaTime)
         return false;
     }
 }
-// TODO #5 - Improve on camera landing camera shake 
+// Triggers on landing from jump
 void AFPSCharacter::OnJumpLand(const FHitResult &Hit)
 {
-    if (float FallSpeed = FMath::Abs(GetCharacterMovement()->Velocity.Z) > FallSpeedThreshold)
-    {
-        float ShakeScale = FMath::Clamp(FallSpeed / FallSpeedThreshold, 1.f, 2.f);
-
-        if (APlayerController *PC = Cast<APlayerController>(GetController()))
-        {
-            GEngine->AddOnScreenDebugMessage(INDEX_NONE, 5, FColor::Red,
-                                             FString::Printf(TEXT("ShakeScale = %f"), ShakeScale));
-            PC->ClientStartCameraShake(LandingCameraShake, ShakeScale);
-        }
-    }
+    // TODO - Add functionality for refreshing double jump here
+    return;
 }
-// TODO #2 - Add camera shake when player lands
 // TODO #3 - Add double jumping
 // TODO #4 - Add vaulting functionality
