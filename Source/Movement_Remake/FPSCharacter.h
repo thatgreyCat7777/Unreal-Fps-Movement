@@ -55,11 +55,11 @@ private:
 
     // Values
 
-    // Scale when crouching
-    UPROPERTY(EditAnywhere, Category = "Values")
-    FVector CrouchScale = {1, 1, .5f};
+    // Multiple of z scale when crouching
+    UPROPERTY(EditAnywhere, Category = "Crouching")
+    float CrouchScale = .5f;
     // Scale in normal state
-    UPROPERTY(EditAnywhere, Category = "Values")
+    UPROPERTY(EditAnywhere, Category = "Crouching")
     FVector NormalScale = {1, 1, 1};
 
     // Movement Physics

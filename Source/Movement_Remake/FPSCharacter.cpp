@@ -39,6 +39,8 @@ AFPSCharacter::AFPSCharacter()
     CameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
     CameraComp->SetupAttachment(SpringArm);
 
+    CrouchScale *= NormalScale.Z;
+
     // Sets character's max walkspeed to default set in the class
     GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
     GetCharacterMovement()->AirControl = .7f;
@@ -64,6 +66,8 @@ void AFPSCharacter::BeginPlay()
     GetCapsuleComponent()->OnComponentHit.AddDynamic(this, &AFPSCharacter::OnComponentHitCharacter);
     // Links onLanded function
     LandedDelegate.AddDynamic(this, &AFPSCharacter::OnJumpLand);
+    // Set player scale to default scale
+    SetActorScale3D(NormalScale);
 }
 
 // Called every frame
@@ -78,7 +82,7 @@ void AFPSCharacter::Tick(float DeltaTime)
             SmoothCameraTilt(-3.f, SlideCameraTiltSpeed, DeltaTime);
         }
         // Gradually changes scale of player to crouch scale
-        GradualCrouch(CrouchScale.Z, DeltaTime);
+        GradualCrouch(CrouchScale, DeltaTime);
         if (GetCharacterMovement()->IsMovingOnGround() && GetCharacterMovement()->IsJumpAllowed())
         {
             // Applies force to speed up player when sliding down slopes
