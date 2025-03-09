@@ -252,7 +252,7 @@ bool AFPSCharacter::GradualSlide(const float &DeltaTime)
 void AFPSCharacter::StartSlide()
 {
     // Checks if player has enough speed to apply slide force
-    if (GetCharacterMovement()->Velocity.Size() > 100.f && !bAppliedSlideForce)
+    if (GetCharacterMovement()->Velocity.Size2D() > MinSlideSpeed && !bAppliedSlideForce)
     {
         // Adds impulse force to character
         GetCharacterMovement()->Velocity += GetCharacterMovement()->Velocity.GetSafeNormal2D() * SlideForce;
@@ -267,23 +267,7 @@ void AFPSCharacter::OnComponentHitCharacter(UPrimitiveComponent *HitComp, AActor
                                             const FHitResult &Hit)
 {
     // GEngine->AddOnScreenDebugMessage(0, 5.0f, FColor::Cyan, TEXT("CompHit"));
-    if (GetCharacterMovement()->IsMovingOnGround())
-    {
-        if (bIsCrouching)
-        {
-            StartSlide();
-        }
-        // Sets bAppliedSlideForce to false when player hits ground and is not crouching
-        else
-        {
-            bAppliedSlideForce = false;
-            // GEngine->AddOnScreenDebugMessage(0, 5, FColor::Blue, TEXT("Slide reset"));
-        }
-        if (bIsWallrunning)
-        {
-            bIsWallrunning = false;
-        }
-    }
+
     // Debug message
     GEngine->AddOnScreenDebugMessage(0, 5, FColor::Emerald,
                                      FString::Printf(TEXT("Normal: %s, RightVector: %s"), *Hit.Normal.ToString(),
@@ -325,8 +309,7 @@ void AFPSCharacter::StartWallRun(const FVector &Normal)
         WallRunTiltDirection = FMath::Sign(FVector::DotProduct(GetActorRightVector(), WallNormalVector));
         if (!bIsWallrunning)
         {
-            GetCharacterMovement()->Velocity.Z = 0;
-            GetCharacterMovement()->Velocity.Z += 100.f;
+            GetCharacterMovement()->Velocity.Z = 150;
         }
         bIsWallrunning = true;
     }
@@ -354,10 +337,14 @@ void AFPSCharacter::WallJump()
     if (bIsWallrunning && bIsOnWall)
     {
         StopWallRun();
+        // Records velocity before the jump
         FVector InitVelocity = GetCharacterMovement()->Velocity;
-        GetCharacterMovement()->Launch(
-            (FVector::UpVector * 1.7 + WallNormalVector * 2 + GetCharacterMovement()->Velocity.GetSafeNormal()) *
-            WallJumpForce);
+        // Launches the player upwards and off the wall
+        GetCharacterMovement()->Launch((FVector::UpVector * 1.7 +
+                                        FVector::VectorPlaneProject(WallNormalVector, FVector::UpVector) * 2 +
+                                        GetCharacterMovement()->Velocity.GetSafeNormal()) *
+                                       WallJumpForce);
+        // Adds back velocity after jump to preserve momentum
         GetCharacterMovement()->Velocity += InitVelocity;
     }
 }
@@ -365,7 +352,20 @@ void AFPSCharacter::WallJump()
 void AFPSCharacter::OnJumpLand(const FHitResult &Hit)
 {
     // TODO - Add functionality for refreshing double jump here
-    return;
+    if (bIsCrouching)
+    {
+        StartSlide();
+    }
+    // Sets bAppliedSlideForce to false when player hits ground and is not crouching
+    else
+    {
+        bAppliedSlideForce = false;
+        // GEngine->AddOnScreenDebugMessage(0, 5, FColor::Blue, TEXT("Slide reset"));
+    }
+    if (bIsWallrunning)
+    {
+        bIsWallrunning = false;
+    }
 }
 // TODO #3 - Add double jumping
 // TODO #4 - Add vaulting functionality
