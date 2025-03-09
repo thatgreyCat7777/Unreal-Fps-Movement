@@ -160,4 +160,6 @@ private:
     bool GradualSlide(const float &DeltaTime);
     UFUNCTION()
     void OnJumpLand(const FHitResult &Hit);
+    UFUNCTION()
+    void StartSlide();
 };

@@ -162,6 +162,7 @@ void AFPSCharacter::Look(const FInputActionInstance &Instance)
     AddControllerYawInput(Input.X);
     // GEngine->AddOnScreenDebugMessage(0, 3.0f, FColor::Blue, TEXT("Look"));
 }
+// * Crouching and sliding functionality
 // Starts crouching
 void AFPSCharacter::StartCrouch(const FInputActionInstance &Instance)
 {
@@ -182,19 +183,10 @@ void AFPSCharacter::StartCrouch(const FInputActionInstance &Instance)
     // Sets walkspeed to bIsCrouching walkspeed
     GetCharacterMovement()->MaxWalkSpeed = CrouchSpeed;
 
-    // Checks if current velocity is fast enough for sliding
-    if (GetCharacterMovement()->Velocity.Size() > 100.f)
+    // Checks if character is on ground
+    if (GetCharacterMovement()->IsMovingOnGround())
     {
-        // Checks if character is on ground
-        if (GetCharacterMovement()->IsMovingOnGround())
-        {
-            // Adds impulse force to character
-            GetCharacterMovement()->Velocity += GetCharacterMovement()->Velocity.GetSafeNormal2D() * SlideForce;
-            // Log message for debugging
-            // GEngine->AddOnScreenDebugMessage(0, 5, FColor::Green, TEXT("Force added"));
-            bAppliedSlideForce = true;
-            AddVelocityMag = GradualSlideForce;
-        }
+        StartSlide();
     }
 }
 // Stops Crouching
@@ -216,6 +208,60 @@ void AFPSCharacter::StopCrouch(const FInputActionInstance &Instance)
         bAppliedSlideForce = false;
     }
 }
+// Gradually changes scale of player to crouch or normal scale
+void AFPSCharacter::GradualCrouch(const float &ZScale, const float &DeltaTime)
+{
+    FVector NewScale = GetActorScale3D();
+    if (!FMath::IsNearlyEqual(NewScale.Z, ZScale))
+    {
+        NewScale.Z = FMath::FInterpTo(NewScale.Z, ZScale, DeltaTime, CrouchTransitionSpeed);
+        SetActorScale3D(NewScale);
+    }
+    FVector NewLocation = GetActorLocation();
+    float TargetLocationZ = NewLocation.Z + (NormalScale.Z - ZScale) * (bIsCrouching ? -1 : 1);
+    if (!FMath::IsNearlyEqual(NewLocation.Z, TargetLocationZ))
+    {
+        NewLocation.Z = FMath::FInterpTo(NewLocation.Z, TargetLocationZ, DeltaTime, CrouchTransitionSpeed);
+        SetActorLocation(NewLocation);
+    }
+}
+// TODO - Check if function requires bool
+// Applies gradual slide force to player
+// Returns true when still applying force and false when it has stopped
+bool AFPSCharacter::GradualSlide(const float &DeltaTime)
+{
+    // Velocity vector to add to player
+    AddVelocityMag = FMath::FInterpTo(AddVelocityMag, 0.f, DeltaTime, 20.f);
+
+    // GEngine->AddOnScreenDebugMessage(INDEX_NONE, 5.f, FColor::Red,
+    //                                  FString::Printf(TEXT("AddVelocityMag: %d"), AddVelocityMag));
+
+    // Checks if adding velocity is needed
+    if (!FMath::IsNearlyEqual(AddVelocityMag, 0))
+    {
+        GetCharacterMovement()->Velocity +=
+            AddVelocityMag * GetCharacterMovement()->Velocity.GetSafeNormal2D() * DeltaTime * 60;
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+// Applies initial slide force and starts gradual slide
+void AFPSCharacter::StartSlide()
+{
+    // Checks if player has enough speed to apply slide force
+    if (GetCharacterMovement()->Velocity.Size() > 100.f && !bAppliedSlideForce)
+    {
+        // Adds impulse force to character
+        GetCharacterMovement()->Velocity += GetCharacterMovement()->Velocity.GetSafeNormal2D() * SlideForce;
+        bAppliedSlideForce = true;
+        AddVelocityMag = GradualSlideForce;
+        // GEngine->AddOnScreenDebugMessage(0, 5.0f, FColor::Cyan, TEXT("JumpSlide"));
+    }
+}
+// Triggers when player hits an object
 void AFPSCharacter::OnComponentHitCharacter(UPrimitiveComponent *HitComp, AActor *OtherActor,
                                             UPrimitiveComponent *OtherComp, FVector NormalImpulse,
                                             const FHitResult &Hit)
@@ -225,14 +271,7 @@ void AFPSCharacter::OnComponentHitCharacter(UPrimitiveComponent *HitComp, AActor
     {
         if (bIsCrouching)
         {
-            if (GetCharacterMovement()->Velocity.Size() > 100.f && !bAppliedSlideForce)
-            {
-                // Adds impulse force to character
-                GetCharacterMovement()->Velocity += GetCharacterMovement()->Velocity.GetSafeNormal2D() * SlideForce;
-                bAppliedSlideForce = true;
-                AddVelocityMag = GradualSlideForce;
-                // GEngine->AddOnScreenDebugMessage(0, 5.0f, FColor::Cyan, TEXT("JumpSlide"));
-            }
+            StartSlide();
         }
         // Sets bAppliedSlideForce to false when player hits ground and is not crouching
         else
@@ -268,23 +307,6 @@ void AFPSCharacter::SmoothCameraTilt(const float &Angle, const float &TiltSpeed,
     {
         CameraTilt.Roll = FMath::FInterpTo(CameraTilt.Roll, Angle, DeltaTime, TiltSpeed);
         CameraComp->SetRelativeRotation(CameraTilt);
-    }
-}
-// Gradually changes scale of player to crouch or normal scale
-void AFPSCharacter::GradualCrouch(const float &ZScale, const float &DeltaTime)
-{
-    FVector NewScale = GetActorScale3D();
-    if (!FMath::IsNearlyEqual(NewScale.Z, ZScale))
-    {
-        NewScale.Z = FMath::FInterpTo(NewScale.Z, ZScale, DeltaTime, CrouchTransitionSpeed);
-        SetActorScale3D(NewScale);
-    }
-    FVector NewLocation = GetActorLocation();
-    float TargetLocationZ = NewLocation.Z + (NormalScale.Z - ZScale) * (bIsCrouching ? -1 : 1);
-    if (!FMath::IsNearlyEqual(NewLocation.Z, TargetLocationZ))
-    {
-        NewLocation.Z = FMath::FInterpTo(NewLocation.Z, TargetLocationZ, DeltaTime, CrouchTransitionSpeed);
-        SetActorLocation(NewLocation);
     }
 }
 // Checks if the object the player collides with is a wall
@@ -337,29 +359,6 @@ void AFPSCharacter::WallJump()
             (FVector::UpVector * 1.7 + WallNormalVector * 2 + GetCharacterMovement()->Velocity.GetSafeNormal()) *
             WallJumpForce);
         GetCharacterMovement()->Velocity += InitVelocity;
-    }
-}
-// TODO - Check if function requires bool
-// Applies gradual slide force to player
-// Returns true when still applying force and false when it has stopped
-bool AFPSCharacter::GradualSlide(const float &DeltaTime)
-{
-    // Velocity vector to add to player
-    AddVelocityMag = FMath::FInterpTo(AddVelocityMag, 0.f, DeltaTime, 20.f);
-
-    // GEngine->AddOnScreenDebugMessage(INDEX_NONE, 5.f, FColor::Red,
-    //                                  FString::Printf(TEXT("AddVelocityMag: %d"), AddVelocityMag));
-
-    // Checks if adding velocity is needed
-    if (!FMath::IsNearlyEqual(AddVelocityMag, 0))
-    {
-        GetCharacterMovement()->Velocity +=
-            AddVelocityMag * GetCharacterMovement()->Velocity.GetSafeNormal2D() * DeltaTime * 60;
-        return true;
-    }
-    else
-    {
-        return false;
     }
 }
 // Triggers on landing from jump
