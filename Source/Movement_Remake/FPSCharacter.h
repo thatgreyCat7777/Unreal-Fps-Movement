@@ -121,7 +121,7 @@ private:
     // Keeps track of velocity to add when applying gradual slide force
     float AddVelocityMag = SlideForce;
     // Minimum slide speed required to trigger slide force
-    float MinSlideSpeed = WalkSpeed * .65;
+    float MinSlideSpeed = WalkSpeed * .5;
     // Frame counter to help run code every few frames
     // Note: Overflow of this number is intentional
     uint8 FrameCounter = 0;
@@ -138,16 +138,16 @@ private:
     UFUNCTION()
     void StopCrouch(const FInputActionInstance &Instance);
     UFUNCTION()
+    void StartSlide();
+    UFUNCTION()
+    bool GradualSlide(const float &DeltaTime);
+    UFUNCTION()
     void OnComponentHitCharacter(UPrimitiveComponent *HitComp, AActor *OtherActor, UPrimitiveComponent *OtherComp,
                                  FVector NormalImpulse, const FHitResult &Hit);
     UFUNCTION()
     void SmoothCameraTilt(const float &Angle, const float &TiltSpeed, const float &DeltaTime);
     UFUNCTION()
     void GradualCrouch(const float &Scale, const float &DeltaTime);
-    // TODO - Implement Slide force function
-    // UFUNCTION()
-    // void ApplySlideForce();
-    // TODO - Implement IsWall function
     UFUNCTION()
     bool IsWall(const FVector &Normal);
     UFUNCTION()
@@ -159,9 +159,5 @@ private:
     UFUNCTION()
     void WallJump();
     UFUNCTION()
-    bool GradualSlide(const float &DeltaTime);
-    UFUNCTION()
     void OnJumpLand(const FHitResult &Hit);
-    UFUNCTION()
-    void StartSlide();
 };

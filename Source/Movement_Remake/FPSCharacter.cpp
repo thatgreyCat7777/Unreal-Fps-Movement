@@ -151,7 +151,7 @@ void AFPSCharacter::Walk(const FInputActionInstance &Instance)
     AddMovementInput(GetActorRightVector(), Input.X);
     // GEngine->AddOnScreenDebugMessage(0, 5.f, FColor::Green,
     //                                  FString::Printf(TEXT("Velocity = %d, Floor normal = %d"),
-    //                                                  GetCharacterMovement()->Velocity.Size2D(),
+    //                                                  GetCharacterMovement()->Velocity.SizeSquared2D(),
     //                                                  GetCharacterMovement()->CurrentFloor.HitResult.Normal.Z));
 }
 // Function for player camera rotation
@@ -176,7 +176,7 @@ void AFPSCharacter::StartCrouch(const FInputActionInstance &Instance)
     // Adds message containing character velocity
     // GEngine->AddOnScreenDebugMessage(0, 5.f, FColor::Green,
     //                                  FString::Printf(TEXT("Velocity = %d"),
-    //                                  GetCharacterMovement()->Velocity.Size2D()));
+    //                                  GetCharacterMovement()->Velocity.SizeSquared2D()));
     // Sets ground friction to sliding friction
     GetCharacterMovement()->GroundFriction = SlideFriction;
     GetCharacterMovement()->BrakingFrictionFactor = 0.1f;
@@ -252,7 +252,7 @@ bool AFPSCharacter::GradualSlide(const float &DeltaTime)
 void AFPSCharacter::StartSlide()
 {
     // Checks if player has enough speed to apply slide force
-    if (GetCharacterMovement()->Velocity.Size2D() > MinSlideSpeed && !bAppliedSlideForce)
+    if (GetCharacterMovement()->Velocity.SizeSquared2D() > MinSlideSpeed * MinSlideSpeed && !bAppliedSlideForce)
     {
         // Adds impulse force to character
         GetCharacterMovement()->Velocity += GetCharacterMovement()->Velocity.GetSafeNormal2D() * SlideForce;
