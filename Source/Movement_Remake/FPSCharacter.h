@@ -65,29 +65,33 @@ private:
     // Movement Physics
 
     // Normal Walkspeed
-    UPROPERTY(EditAnywhere, Category = "Movement")
+    UPROPERTY(EditAnywhere, Category = "Basic Movement")
     float WalkSpeed = 1000.f;
     // Crouched Walkspeed
-    UPROPERTY(EditAnywhere, Category = "Movement")
+    UPROPERTY(EditAnywhere, Category = "Basic Movement")
     float CrouchSpeed = 300.f;
     // Slide force impulse applied when character slides
-    UPROPERTY(EditAnywhere, Category = "Movement")
+    UPROPERTY(EditAnywhere, Category = "Slide Movement")
     float SlideForce = 1000.f;
     // Slide force applied over time
-    UPROPERTY(EditAnywhere, Category = "Movement")
+    UPROPERTY(EditAnywhere, Category = "Slide Movement")
     float GradualSlideForce = 200.f;
     // Speed at which gradual slide force interps to 0
-    UPROPERTY(EditAnywhere, Category = "Movement")
+    UPROPERTY(EditAnywhere, Category = "Slide Movement")
     float GradualSlideForceTime = 20.f;
     // Ground friction when sliding
-    UPROPERTY(EditAnywhere, Category = "Movement")
+    UPROPERTY(EditAnywhere, Category = "Slide Movement")
     float SlideFriction = .2f;
-    UPROPERTY(EditAnywhere, Category = "Movement")
+    UPROPERTY(EditAnywhere, Category = "Wallrun Movement")
     float WallRunCounterGravity = 1;
-    UPROPERTY(EditAnywhere, Category = "Movement")
+    UPROPERTY(EditAnywhere, Category = "Wallrun Movement")
     float WallRunSpeed = 1000;
-    UPROPERTY(EditAnywhere, Category = "Movement")
+    UPROPERTY(EditAnywhere, Category = "Wallrun Movement")
     float WallJumpForce = 300.f;
+    // Number of jumps that player can perform in air
+    UPROPERTY(EditAnywhere, Category = "Double Jump Movement")
+    int AirJumpCount = 1;
+
 
     // Transition Speeds
 
@@ -160,4 +164,6 @@ private:
     void WallJump();
     UFUNCTION()
     void OnJumpLand(const FHitResult &Hit);
+    UFUNCTION()
+    void AirJump();
 };

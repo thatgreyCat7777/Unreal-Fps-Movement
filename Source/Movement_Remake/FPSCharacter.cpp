@@ -134,6 +134,7 @@ void AFPSCharacter::SetupPlayerInputComponent(UInputComponent *PlayerInputCompon
         // Binds jump function to built in jump function
         EnhancedInput->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ACharacter::Jump);
         EnhancedInput->BindAction(JumpAction, ETriggerEvent::Triggered, this, &AFPSCharacter::WallJump);
+        EnhancedInput->BindAction(JumpAction, ETriggerEvent::Started, this, &AFPSCharacter::AirJump);
         // Binds bIsCrouching to startcrouch and stopcrouch function
         EnhancedInput->BindAction(CrouchAction, ETriggerEvent::Started, this, &AFPSCharacter::StartCrouch);
         EnhancedInput->BindAction(CrouchAction, ETriggerEvent::Completed, this, &AFPSCharacter::StopCrouch);
@@ -366,6 +367,15 @@ void AFPSCharacter::OnJumpLand(const FHitResult &Hit)
     {
         bIsWallrunning = false;
     }
+    AirJumpCount = 1;
 }
 // TODO #3 - Add double jumping
+void AFPSCharacter::AirJump()
+{
+    if (GetCharacterMovement()->IsFalling() && !bIsWallrunning && AirJumpCount > 0)
+    {
+        LaunchCharacter(GetActorUpVector() * 500, false, true);
+        AirJumpCount--;
+    }
+}
 // TODO #4 - Add vaulting functionality
