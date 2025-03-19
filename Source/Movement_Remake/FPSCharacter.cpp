@@ -11,6 +11,7 @@
 #include "GameFramework/PlayerController.h"
 #include "HAL/Platform.h"
 #include "InputTriggers.h"
+#include "Kismet/GameplayStatics.h"
 #include "Math/Color.h"
 #include "Math/MathFwd.h"
 #include "Math/UnrealMathUtility.h"
@@ -313,6 +314,8 @@ void AFPSCharacter::StartWallRun(const FVector &Normal)
             GetCharacterMovement()->Velocity.Z = 150;
         }
         bIsWallrunning = true;
+        // Reset double jump
+        AirJumpCount = 1;
     }
 }
 // Called every frame when wall running
@@ -339,14 +342,16 @@ void AFPSCharacter::WallJump()
     {
         StopWallRun();
         // Records velocity before the jump
-        FVector InitVelocity = GetCharacterMovement()->Velocity;
+        // FVector InitVelocity = GetCharacterMovement()->Velocity;
+        // TODO #6 - Make wall jump preserve xy velocity
         // Launches the player upwards and off the wall
-        GetCharacterMovement()->Launch((FVector::UpVector * 1.7 +
-                                        FVector::VectorPlaneProject(WallNormalVector, FVector::UpVector) * 2 +
-                                        GetCharacterMovement()->Velocity.GetSafeNormal()) *
-                                       WallJumpForce);
+        LaunchCharacter((FVector::UpVector * 1.7 +
+                         FVector::VectorPlaneProject(WallNormalVector, FVector::UpVector) * 2 +
+                         GetCharacterMovement()->Velocity.GetSafeNormal()) *
+                            WallJumpForce,
+                        true, true);
         // Adds back velocity after jump to preserve momentum
-        GetCharacterMovement()->Velocity += InitVelocity;
+        // GetCharacterMovement()->Velocity += InitVelocity;
     }
 }
 // Triggers on landing from jump
@@ -367,6 +372,7 @@ void AFPSCharacter::OnJumpLand(const FHitResult &Hit)
     {
         bIsWallrunning = false;
     }
+    // Reset double jump
     AirJumpCount = 1;
 }
 // TODO #3 - Add double jumping
@@ -374,7 +380,12 @@ void AFPSCharacter::AirJump()
 {
     if (GetCharacterMovement()->IsFalling() && !bIsWallrunning && AirJumpCount > 0)
     {
-        LaunchCharacter(GetActorUpVector() * 500, false, true);
+        // Spawns particle effect
+        FVector Location = GetActorLocation();
+        Location.Z -= 55;
+        UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ExplosionParticle, Location);
+        // Adds jump force
+        LaunchCharacter(GetActorUpVector() * GetCharacterMovement()->JumpZVelocity, false, true);
         AirJumpCount--;
     }
 }

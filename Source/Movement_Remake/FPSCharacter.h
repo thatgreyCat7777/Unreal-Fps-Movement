@@ -43,6 +43,9 @@ private:
     UPROPERTY(EditAnywhere, Category = "Components")
     UCapsuleComponent *PlayerOverlapCollider;
 
+    UPROPERTY(EditAnywhere, Category = "Effects")
+    UParticleSystem *ExplosionParticle;
+    
     // Input actions
     UPROPERTY(EditAnywhere, Category = "Input")
     UInputAction *WalkAction;
