@@ -1,10 +1,13 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "FPSCharacter.h"
+#include "CollisionQueryParams.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Containers/UnrealString.h"
 #include "Engine/Engine.h"
+#include "Engine/EngineTypes.h"
+#include "Engine/HitResult.h"
 #include "EnhancedInputComponent.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -15,6 +18,7 @@
 #include "Math/Color.h"
 #include "Math/MathFwd.h"
 #include "Math/UnrealMathUtility.h"
+#include "Misc/CoreMiscDefines.h"
 #include "Templates/Casts.h"
 #include "Delegates/Delegate.h"
 
@@ -25,22 +29,18 @@ AFPSCharacter::AFPSCharacter()
     // it.
     PrimaryActorTick.bCanEverTick = true;
 
-    // Get default capsule collider
-    UCapsuleComponent *Collider = GetCapsuleComponent();
-
     // Setup Static mesh
     PlayerMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("PlayerMesh"));
-    PlayerMesh->SetupAttachment(Collider);
+    PlayerMesh->SetupAttachment(GetCapsuleComponent());
+    PlayerMesh->SetCollisionProfileName(TEXT("Pawn"));
 
     // Setup spring arm
     SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
-    SpringArm->SetupAttachment(Collider);
+    SpringArm->SetupAttachment(GetCapsuleComponent());
 
     // Setup camera
     CameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
     CameraComp->SetupAttachment(SpringArm);
-
-    CrouchScale *= NormalScale.Z;
 
     // Sets character's max walkspeed to default set in the class
     GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
@@ -48,7 +48,7 @@ AFPSCharacter::AFPSCharacter()
     GetCharacterMovement()->FormerBaseVelocityDecayHalfLife = 1;
     GetCharacterMovement()->MaxStepHeight = 50;
     GetMesh()->bAutoActivate = false;
-    CameraComp->FieldOfView = 140.f;
+    CameraComp->FieldOfView = 120.f;
     GetCapsuleComponent()->SetCapsuleHalfHeight(50);
     GetCapsuleComponent()->SetCapsuleRadius(26);
     GetCapsuleComponent()->SetCollisionProfileName(TEXT("Pawn"));
@@ -56,6 +56,7 @@ AFPSCharacter::AFPSCharacter()
     SpringArm->bEnableCameraLag = true;
     SpringArm->CameraLagSpeed = 200;
     bIsSpatiallyLoaded = false;
+    AirJumpCount = AirJumpMax;
 }
 
 // Called when the game starts or when spawned
@@ -67,6 +68,10 @@ void AFPSCharacter::BeginPlay()
     GetCapsuleComponent()->OnComponentHit.AddDynamic(this, &AFPSCharacter::OnComponentHitCharacter);
     // Links onLanded function
     LandedDelegate.AddDynamic(this, &AFPSCharacter::OnJumpLand);
+    // Links line trace function
+    WallLineTraceDelegate.AddDynamic(this, &AFPSCharacter::OnLineWallTraceHit);
+    // Set crouch scale to scaled value of normal scale
+    CrouchScale *= NormalScale.Z;
     // Set player scale to default scale
     SetActorScale3D(NormalScale);
 }
@@ -75,10 +80,30 @@ void AFPSCharacter::BeginPlay()
 void AFPSCharacter::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
+    FHitResult LineTrace;
+    FCollisionQueryParams QueryParams;
+    QueryParams.AddIgnoredActor(this);
+    if (GetWorld()->LineTraceSingleByChannel(LineTrace, GetActorLocation(),
+                                             GetActorLocation() + GetActorRightVector() * 80,
+                                             ECollisionChannel::ECC_Camera, QueryParams))
+    {
+        WallLineTraceDelegate.Broadcast(LineTrace);
+    }
+    else if (GetWorld()->LineTraceSingleByChannel(LineTrace, GetActorLocation(),
+                                                  GetActorLocation() + GetActorRightVector() * -80,
+                                                  ECollisionChannel::ECC_Camera, QueryParams))
+    {
+        WallLineTraceDelegate.Broadcast(LineTrace);
+    }
+    else if (bIsWallrunning)
+    {
+        // If no wall found anymore, stop wall run
+        StopWallRun();
+    }
     if (bIsCrouching)
     {
         // Makes smoothly camera tilt when sliding
-        if (!bIsWallrunning || !bIsOnWall)
+        if (!bIsWallrunning)
         {
             SmoothCameraTilt(-3.f, SlideCameraTiltSpeed, DeltaTime);
         }
@@ -102,24 +127,18 @@ void AFPSCharacter::Tick(float DeltaTime)
     else
     {
         // Makes smoothly camera tilt when not sliding
-        if (!bIsOnWall || !bIsWallrunning)
+        if (!bIsWallrunning)
         {
             SmoothCameraTilt(0.f, SlideCameraTiltSpeed, DeltaTime);
         }
         // Gradually changes scale of player to normal scale
         GradualCrouch(NormalScale.Z, DeltaTime);
     }
-    if (bIsWallrunning && bIsOnWall)
+    if (bIsWallrunning)
     {
-        // Triggers every 1 / 5 of a second
-        if (FrameCounter % 5 / DeltaTime == 0)
-        {
-            bIsOnWall = false;
-        }
         WallRun(DeltaTime);
         SmoothCameraTilt(WallRunTiltDirection * WallRunCameraTiltAngle, WallRunTransitionSpeed, DeltaTime);
     }
-    FrameCounter++;
 }
 
 // Called to bind functionality to input
@@ -134,7 +153,7 @@ void AFPSCharacter::SetupPlayerInputComponent(UInputComponent *PlayerInputCompon
         EnhancedInput->BindAction(LookAction, ETriggerEvent::Triggered, this, &AFPSCharacter::Look);
         // Binds jump function to built in jump function
         EnhancedInput->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ACharacter::Jump);
-        EnhancedInput->BindAction(JumpAction, ETriggerEvent::Triggered, this, &AFPSCharacter::WallJump);
+        EnhancedInput->BindAction(JumpAction, ETriggerEvent::Started, this, &AFPSCharacter::WallJump);
         EnhancedInput->BindAction(JumpAction, ETriggerEvent::Started, this, &AFPSCharacter::AirJump);
         // Binds bIsCrouching to startcrouch and stopcrouch function
         EnhancedInput->BindAction(CrouchAction, ETriggerEvent::Started, this, &AFPSCharacter::StartCrouch);
@@ -156,6 +175,8 @@ void AFPSCharacter::Walk(const FInputActionInstance &Instance)
     //                                                  GetCharacterMovement()->Velocity.SizeSquared2D(),
     //                                                  GetCharacterMovement()->CurrentFloor.HitResult.Normal.Z));
 }
+// TODO #7 - Implement air strafing
+void AFPSCharacter::AirAccelerate(const FVector &WishVelocity) { return; }
 // Function for player camera rotation
 void AFPSCharacter::Look(const FInputActionInstance &Instance)
 {
@@ -269,21 +290,6 @@ void AFPSCharacter::OnComponentHitCharacter(UPrimitiveComponent *HitComp, AActor
                                             const FHitResult &Hit)
 {
     // GEngine->AddOnScreenDebugMessage(0, 5.0f, FColor::Cyan, TEXT("CompHit"));
-
-    // Debug message
-    GEngine->AddOnScreenDebugMessage(0, 5, FColor::Emerald,
-                                     FString::Printf(TEXT("Normal: %s, RightVector: %s"), *Hit.Normal.ToString(),
-                                                     *GetActorRightVector().ToString()));
-    // Checks if there is a wall
-    if (IsWall(Hit.Normal))
-    {
-        if (!bIsWallrunning)
-        {
-            // GEngine->AddOnScreenDebugMessage(0, 5, FColor::Blue, TEXT("IsWall = True!"));
-            StartWallRun(Hit.Normal);
-        }
-        bIsOnWall = true;
-    }
 }
 // Makes smoothly camera tilt when sliding
 void AFPSCharacter::SmoothCameraTilt(const float &Angle, const float &TiltSpeed, const float &DeltaTime)
@@ -303,19 +309,20 @@ bool AFPSCharacter::IsWall(const FVector &Normal)
     // return FMath::IsNearlyEqual(FMath::Abs(Normal.X), 1) || FMath::IsNearlyEqual(FMath::Abs(Normal.Y), 1);
 }
 // Starts the wall run
-void AFPSCharacter::StartWallRun(const FVector &Normal)
+void AFPSCharacter::StartWallRun(const FHitResult &Hit)
 {
     if (!GetCharacterMovement()->IsMovingOnGround())
     {
-        WallNormalVector = Normal;
+        WallNormalVector = Hit.Normal;
+        CurrentWall = Hit.GetComponent();
         WallRunTiltDirection = FMath::Sign(FVector::DotProduct(GetActorRightVector(), WallNormalVector));
         if (!bIsWallrunning)
         {
-            GetCharacterMovement()->Velocity.Z = 150;
+            GetCharacterMovement()->Velocity.Z = 250;
         }
         bIsWallrunning = true;
         // Reset double jump
-        AirJumpCount = 1;
+        AirJumpCount = AirJumpMax;
     }
 }
 // Called every frame when wall running
@@ -330,28 +337,28 @@ void AFPSCharacter::WallRun(const float &DeltaTime)
 // Stops the wall running
 void AFPSCharacter::StopWallRun()
 {
-    GetCharacterMovement()->Velocity += WallNormalVector * WallRunSpeed;
+    GetCharacterMovement()->Velocity += WallNormalVector * WallRunSpeed * GetWorld()->GetDeltaSeconds();
     bIsWallrunning = false;
-    bIsOnWall = false;
+    CurrentWall = nullptr;
 }
 // Jumps off the wall when wall running
 void AFPSCharacter::WallJump()
 {
+    // TODO #8 - Make wall jump intensity consistent regardless of player's orientation to wall
     // Check if character is on wall and wall running
-    if (bIsWallrunning && bIsOnWall)
+    if (bIsWallrunning)
     {
         StopWallRun();
-        // Records velocity before the jump
-        // FVector InitVelocity = GetCharacterMovement()->Velocity;
+        GEngine->AddOnScreenDebugMessage(
+            INDEX_NONE, 2, FColor::Red,
+            FString::Printf(TEXT("Wall Normal: %s"),
+                            *FVector::VectorPlaneProject(WallNormalVector, FVector::UpVector).ToString()));
         // TODO #6 - Make wall jump preserve xy velocity
         // Launches the player upwards and off the wall
-        LaunchCharacter((FVector::UpVector * 1.7 +
-                         FVector::VectorPlaneProject(WallNormalVector, FVector::UpVector) * 2 +
-                         GetCharacterMovement()->Velocity.GetSafeNormal()) *
-                            WallJumpForce,
-                        true, true);
-        // Adds back velocity after jump to preserve momentum
-        // GetCharacterMovement()->Velocity += InitVelocity;
+        LaunchCharacter(
+            (FVector::UpVector * 1.7 + FVector::VectorPlaneProject(WallNormalVector, FVector::UpVector) * 2) *
+                WallJumpForce,
+            false, true);
     }
 }
 // Triggers on landing from jump
@@ -370,10 +377,10 @@ void AFPSCharacter::OnJumpLand(const FHitResult &Hit)
     }
     if (bIsWallrunning)
     {
-        bIsWallrunning = false;
+        StopWallRun();
     }
     // Reset double jump
-    AirJumpCount = 1;
+    AirJumpCount = AirJumpMax;
 }
 // TODO #3 - Add double jumping
 void AFPSCharacter::AirJump()
@@ -387,6 +394,20 @@ void AFPSCharacter::AirJump()
         // Adds jump force
         LaunchCharacter(GetActorUpVector() * GetCharacterMovement()->JumpZVelocity, false, true);
         AirJumpCount--;
+    }
+}
+// TODO #9 - Prevent player from bouncing consistently when beside a wall
+void AFPSCharacter::OnLineWallTraceHit(const FHitResult &Hit)
+{
+    if (Hit.GetComponent() && CurrentWall && Hit.GetComponent() == CurrentWall)
+        return;
+    if (IsWall(Hit.Normal))
+    {
+        if (GetCharacterMovement()->IsFalling() && !bIsWallrunning)
+        {
+            GEngine->AddOnScreenDebugMessage(INDEX_NONE, 2, FColor::Red, TEXT("IsWall!"));
+            StartWallRun(Hit);
+        }
     }
 }
 // TODO #4 - Add vaulting functionality

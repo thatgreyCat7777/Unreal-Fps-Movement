@@ -1,8 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
+
 #include "CoreMinimal.h"
-#include "Components/CapsuleComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/Actor.h"
@@ -11,6 +11,14 @@
 #include "InputAction.h"
 #include "Math/MathFwd.h"
 #include "FPSCharacter.generated.h"
+
+/////
+/////////////
+//////////////////
+//////////////////////
+
+UDELEGATE()
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FWallLineTrace, const FHitResult &, Hit);
 
 UCLASS()
 class MOVEMENT_REMAKE_API AFPSCharacter : public ACharacter
@@ -40,12 +48,10 @@ private:
     UCameraComponent *CameraComp;
     UPROPERTY(EditAnywhere, Category = "Components")
     USpringArmComponent *SpringArm;
-    UPROPERTY(EditAnywhere, Category = "Components")
-    UCapsuleComponent *PlayerOverlapCollider;
 
     UPROPERTY(EditAnywhere, Category = "Effects")
     UParticleSystem *ExplosionParticle;
-    
+
     // Input actions
     UPROPERTY(EditAnywhere, Category = "Input")
     UInputAction *WalkAction;
@@ -90,11 +96,12 @@ private:
     UPROPERTY(EditAnywhere, Category = "Wallrun Movement")
     float WallRunSpeed = 1000;
     UPROPERTY(EditAnywhere, Category = "Wallrun Movement")
-    float WallJumpForce = 300.f;
-    // Number of jumps that player can perform in air
+    float WallJumpForce = 420.f;
+    // Max number of jumps that player can perform in air
     UPROPERTY(EditAnywhere, Category = "Double Jump Movement")
+    int AirJumpMax = 1;
+    // Keeps track number of air jumps player can perform
     int AirJumpCount = 1;
-
 
     // Transition Speeds
 
@@ -123,15 +130,14 @@ private:
     FVector WallNormalVector;
     // Dot product between wall normal and player right vector
     float WallRunTiltDirection = 0;
-    // True when player is running on wall
-    bool bIsOnWall = false;
+    // Keeps track of current wall
+    UPrimitiveComponent *CurrentWall = nullptr;
     // Keeps track of velocity to add when applying gradual slide force
     float AddVelocityMag = SlideForce;
     // Minimum slide speed required to trigger slide force
     float MinSlideSpeed = WalkSpeed * .5;
-    // Frame counter to help run code every few frames
-    // Note: Overflow of this number is intentional
-    uint8 FrameCounter = 0;
+    // Wall detection script delegate
+    FWallLineTrace WallLineTraceDelegate;
 
 private:
     // Function for fps camera rotations
@@ -158,7 +164,7 @@ private:
     UFUNCTION()
     bool IsWall(const FVector &Normal);
     UFUNCTION()
-    void StartWallRun(const FVector &Normal);
+    void StartWallRun(const FHitResult &Hit);
     UFUNCTION()
     void WallRun(const float &DeltaTime);
     UFUNCTION()
@@ -169,4 +175,8 @@ private:
     void OnJumpLand(const FHitResult &Hit);
     UFUNCTION()
     void AirJump();
+    UFUNCTION()
+    void AirAccelerate(const FVector &WishVelocity);
+    UFUNCTION()
+    void OnLineWallTraceHit(const FHitResult &Hit);
 };
