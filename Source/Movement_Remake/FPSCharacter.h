@@ -3,8 +3,10 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Containers/EnumAsByte.h"
 #include "Components/StaticMeshComponent.h"
 #include "Camera/CameraComponent.h"
+#include "Engine/EngineTypes.h"
 #include "GameFramework/Actor.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -97,6 +99,10 @@ private:
     float WallRunSpeed = 1000;
     UPROPERTY(EditAnywhere, Category = "Wallrun Movement")
     float WallJumpForce = 420.f;
+    // Collision channel in line trace for wall detection
+    UPROPERTY(EditAnywhere, Category = "Wallrun Movement")
+    TEnumAsByte<ECollisionChannel> WallDetectionChannel =
+        TEnumAsByte<ECollisionChannel>(ECollisionChannel::ECC_Visibility);
     // Max number of jumps that player can perform in air
     UPROPERTY(EditAnywhere, Category = "Double Jump Movement")
     int AirJumpMax = 1;
@@ -128,6 +134,8 @@ private:
     bool bIsWallrunning = false;
     // Normal vector for wall normal
     FVector WallNormalVector;
+    // Perpendicular wall normal
+    FVector WallPerpendicularNormalVector;
     // Dot product between wall normal and player right vector
     float WallRunTiltDirection = 0;
     // Keeps track of current wall
@@ -136,7 +144,12 @@ private:
     float AddVelocityMag = SlideForce;
     // Minimum slide speed required to trigger slide force
     float MinSlideSpeed = WalkSpeed * .5;
+    // Keeps track of current player wasd input
+    FVector WalkingInput = {0, 0, 0};
+
+protected:
     // Wall detection script delegate
+    UPROPERTY(BlueprintAssignable, BlueprintCallable)
     FWallLineTrace WallLineTraceDelegate;
 
 private:
@@ -179,4 +192,6 @@ private:
     void AirAccelerate(const FVector &WishVelocity);
     UFUNCTION()
     void OnLineWallTraceHit(const FHitResult &Hit);
+    UFUNCTION()
+    FVector VectorRotate(const FVector &vec, const double &theta, const double &phi, const double &rho);
 };

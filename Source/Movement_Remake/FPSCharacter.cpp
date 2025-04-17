@@ -21,6 +21,7 @@
 #include "Misc/CoreMiscDefines.h"
 #include "Templates/Casts.h"
 #include "Delegates/Delegate.h"
+#include <cmath>
 
 // Sets default values
 AFPSCharacter::AFPSCharacter()
@@ -85,13 +86,13 @@ void AFPSCharacter::Tick(float DeltaTime)
     QueryParams.AddIgnoredActor(this);
     if (GetWorld()->LineTraceSingleByChannel(LineTrace, GetActorLocation(),
                                              GetActorLocation() + GetActorRightVector() * 80,
-                                             ECollisionChannel::ECC_Camera, QueryParams))
+                                             WallDetectionChannel.GetValue(), QueryParams))
     {
         WallLineTraceDelegate.Broadcast(LineTrace);
     }
     else if (GetWorld()->LineTraceSingleByChannel(LineTrace, GetActorLocation(),
                                                   GetActorLocation() + GetActorRightVector() * -80,
-                                                  ECollisionChannel::ECC_Camera, QueryParams))
+                                                  WallDetectionChannel.GetValue(), QueryParams))
     {
         WallLineTraceDelegate.Broadcast(LineTrace);
     }
@@ -166,10 +167,10 @@ void AFPSCharacter::SetupPlayerInputComponent(UInputComponent *PlayerInputCompon
 void AFPSCharacter::Walk(const FInputActionInstance &Instance)
 {
     // Gets value of input
-    FVector2D Input = Instance.GetValue().Get<FVector2D>();
+    WalkingInput = Instance.GetValue().Get<FVector>();
     // Adds input corresponding to character's forward and right vector
-    AddMovementInput(GetActorForwardVector(), Input.Y);
-    AddMovementInput(GetActorRightVector(), Input.X);
+    AddMovementInput(GetActorForwardVector(), WalkingInput.Y);
+    AddMovementInput(GetActorRightVector(), WalkingInput.X);
     // GEngine->AddOnScreenDebugMessage(0, 5.f, FColor::Green,
     //                                  FString::Printf(TEXT("Velocity = %d, Floor normal = %d"),
     //                                                  GetCharacterMovement()->Velocity.SizeSquared2D(),
@@ -323,6 +324,13 @@ void AFPSCharacter::StartWallRun(const FHitResult &Hit)
         bIsWallrunning = true;
         // Reset double jump
         AirJumpCount = AirJumpMax;
+        WallPerpendicularNormalVector = VectorRotate(WallNormalVector, PI / 2.0, 0, 0);
+        WallPerpendicularNormalVector *=
+            FMath::Sign(FVector::DotProduct(GetCharacterMovement()->Velocity, WallPerpendicularNormalVector));
+
+        GEngine->AddOnScreenDebugMessage(
+            INDEX_NONE, 5.0f, FColor::Blue,
+            FString::Printf(TEXT("Perpenticulat wall vector = %s"), *WallPerpendicularNormalVector.ToString()));
     }
 }
 // Called every frame when wall running
@@ -333,6 +341,7 @@ void AFPSCharacter::WallRun(const float &DeltaTime)
     // Counter gravity to make player fall slower
     GetCharacterMovement()->Velocity += DeltaTime * GetCharacterMovement()->Mass * WallRunCounterGravity *
                                         -GetCharacterMovement()->GetGravityDirection() * .4f;
+    GetCharacterMovement()->Velocity += WallPerpendicularNormalVector * DeltaTime * WallRunSpeed * .1;
 }
 // Stops the wall running
 void AFPSCharacter::StopWallRun()
@@ -405,9 +414,21 @@ void AFPSCharacter::OnLineWallTraceHit(const FHitResult &Hit)
     {
         if (GetCharacterMovement()->IsFalling() && !bIsWallrunning)
         {
-            GEngine->AddOnScreenDebugMessage(INDEX_NONE, 2, FColor::Red, TEXT("IsWall!"));
+            GEngine->AddOnScreenDebugMessage(INDEX_NONE, 2, FColor::Red,
+                                             FString::Printf(TEXT("IsWall! Hit.Normal = %s"), *Hit.Normal.ToString()));
             StartWallRun(Hit);
         }
     }
+}
+// Returns rotated vector by pitch, yaw and roll angles respectively where angles are in radians
+FVector AFPSCharacter::VectorRotate(const FVector &vec, const double &theta, const double &phi, const double &rho)
+{
+    // Precomputed values of sin and cos where 0,1,2th index represents sin and cos of theta, phi and rho respectively
+    double s[3] = {sin(theta), sin(phi), sin(rho)};
+    double c[3] = {cos(theta), cos(phi), cos(rho)};
+
+    return vec.X * FVector(c[0] * c[1], s[0] * c[1], s[1]) +
+           vec.Y * FVector(s[0] * c[2] + c[0] * s[1] * s[2], s[0] * s[1] * s[2] - c[0] * c[2], -c[1] * s[2]) +
+           vec.Z * FVector(-s[0] * s[2] - s[0] * s[1] * c[2], c[0] * s[2] - s[0] * s[1] * c[2], -c[1] * c[2]);
 }
 // TODO #4 - Add vaulting functionality
