@@ -48,6 +48,7 @@ AFPSCharacter::AFPSCharacter()
     GetCharacterMovement()->AirControl = .7f;
     GetCharacterMovement()->FormerBaseVelocityDecayHalfLife = 1;
     GetCharacterMovement()->MaxStepHeight = 50;
+    GetCharacterMovement()->JumpZVelocity = 620;
     GetMesh()->bAutoActivate = false;
     CameraComp->FieldOfView = 120.f;
     GetCapsuleComponent()->SetCapsuleHalfHeight(50);
@@ -324,6 +325,8 @@ void AFPSCharacter::StartWallRun(const FHitResult &Hit)
         bIsWallrunning = true;
         // Reset double jump
         AirJumpCount = AirJumpMax;
+        // Set gravity to normal
+        GetCharacterMovement()->GravityScale = 1;
         WallPerpendicularNormalVector = VectorRotate(WallNormalVector, PI / 2.0, 0, 0);
         WallPerpendicularNormalVector *=
             FMath::Sign(FVector::DotProduct(GetCharacterMovement()->Velocity, WallPerpendicularNormalVector));
@@ -348,7 +351,13 @@ void AFPSCharacter::StopWallRun()
 {
     GetCharacterMovement()->Velocity += WallNormalVector * WallRunSpeed * GetWorld()->GetDeltaSeconds();
     bIsWallrunning = false;
+    // Reset current wall pointer
     CurrentWall = nullptr;
+    // If falling when wall run stops, set to falling gravity
+    if (GetCharacterMovement()->IsFalling())
+    {
+        GetCharacterMovement()->GravityScale = 1.5;
+    }
 }
 // Jumps off the wall when wall running
 void AFPSCharacter::WallJump()
@@ -373,7 +382,6 @@ void AFPSCharacter::WallJump()
 // Triggers on landing from jump
 void AFPSCharacter::OnJumpLand(const FHitResult &Hit)
 {
-    // TODO - Add functionality for refreshing double jump here
     if (bIsCrouching)
     {
         StartSlide();
@@ -390,10 +398,14 @@ void AFPSCharacter::OnJumpLand(const FHitResult &Hit)
     }
     // Reset double jump
     AirJumpCount = AirJumpMax;
+    // Reset gravity scale to normal
+    GetCharacterMovement()->GravityScale = 1;
 }
 // TODO #3 - Add double jumping
 void AFPSCharacter::AirJump()
 {
+    // Increases gravity when jumping
+    GetCharacterMovement()->GravityScale = 1.5;
     if (GetCharacterMovement()->IsFalling() && !bIsWallrunning && AirJumpCount > 0)
     {
         // Spawns particle effect
