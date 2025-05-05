@@ -132,6 +132,8 @@ private:
     bool bAppliedSlideForce = false;
     // True when player is wallrunning
     bool bIsWallrunning = false;
+    // True when player touches wall
+    bool bIsOnWall = false;
     // Normal vector for wall normal
     FVector WallNormalVector;
     // Perpendicular wall normal
@@ -189,7 +191,7 @@ private:
     UFUNCTION()
     void AirJump();
     UFUNCTION()
-    void AirAccelerate(const FVector &WishVelocity);
+    void AirAccelerate(FVector WishVelocity);
     UFUNCTION()
     void OnLineWallTraceHit(const FHitResult &Hit);
     UFUNCTION()

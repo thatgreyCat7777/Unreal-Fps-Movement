@@ -89,13 +89,11 @@ void AFPSCharacter::Tick(float DeltaTime)
                                              GetActorLocation() + GetActorRightVector() * 80,
                                              WallDetectionChannel.GetValue(), QueryParams))
     {
-        WallLineTraceDelegate.Broadcast(LineTrace);
     }
     else if (GetWorld()->LineTraceSingleByChannel(LineTrace, GetActorLocation(),
                                                   GetActorLocation() + GetActorRightVector() * -80,
                                                   WallDetectionChannel.GetValue(), QueryParams))
     {
-        WallLineTraceDelegate.Broadcast(LineTrace);
     }
     else if (bIsWallrunning)
     {
@@ -160,6 +158,7 @@ void AFPSCharacter::SetupPlayerInputComponent(UInputComponent *PlayerInputCompon
         // Binds bIsCrouching to startcrouch and stopcrouch function
         EnhancedInput->BindAction(CrouchAction, ETriggerEvent::Started, this, &AFPSCharacter::StartCrouch);
         EnhancedInput->BindAction(CrouchAction, ETriggerEvent::Completed, this, &AFPSCharacter::StopCrouch);
+
         // Screen Text for debugging
         GEngine->AddOnScreenDebugMessage(1, 3.f, FColor::Green, TEXT("Input Actions Binded"));
     }
@@ -168,23 +167,50 @@ void AFPSCharacter::SetupPlayerInputComponent(UInputComponent *PlayerInputCompon
 void AFPSCharacter::Walk(const FInputActionInstance &Instance)
 {
     // Gets value of input
-    WalkingInput = Instance.GetValue().Get<FVector>();
+    WalkingInput = Instance.GetValue().Get<FVector>() * 320;
+    WalkingInput = WalkingInput.X * GetActorRightVector() + WalkingInput.Y * GetActorForwardVector();
     // Adds input corresponding to character's forward and right vector
-    AddMovementInput(GetActorForwardVector(), WalkingInput.Y);
-    AddMovementInput(GetActorRightVector(), WalkingInput.X);
+    AddMovementInput(WalkingInput);
+    AirAccelerate(WalkingInput);
+
     // GEngine->AddOnScreenDebugMessage(0, 5.f, FColor::Green,
     //                                  FString::Printf(TEXT("Velocity = %d, Floor normal = %d"),
     //                                                  GetCharacterMovement()->Velocity.SizeSquared2D(),
     //                                                  GetCharacterMovement()->CurrentFloor.HitResult.Normal.Z));
 }
 // TODO #7 - Implement air strafing
-void AFPSCharacter::AirAccelerate(const FVector &WishVelocity) { return; }
+void AFPSCharacter::AirAccelerate(FVector WishVelocity)
+{
+    // Debug text
+    GEngine->AddOnScreenDebugMessage(INDEX_NONE, 5, FColor::Emerald, TEXT("HELLO"));
+
+    float WishSpeed, CurrentSpeed, AddSpeed, AccelSpeed;
+
+    // Length of vector
+    WishSpeed = WishVelocity.Length();
+    // Normalises wish velocity
+    WishVelocity = WishVelocity.GetSafeNormal();
+    // Clamps wish speed
+    if (WishSpeed > 30)
+        WishSpeed = 30;
+
+    // Determines current speed by the allignment of the player input and player current velocity
+    CurrentSpeed = FVector::DotProduct(WishVelocity, GetCharacterMovement()->Velocity);
+    AddSpeed = WishSpeed - CurrentSpeed;
+    if (AddSpeed <= 0)
+        return;
+
+    AccelSpeed = WalkingInput.Length() * 300 * GetWorld()->GetDeltaSeconds();
+
+    GetCharacterMovement()->Velocity += AccelSpeed * WishVelocity;
+}
 // Function for player camera rotation
 void AFPSCharacter::Look(const FInputActionInstance &Instance)
 {
     FVector2D Input = Instance.GetValue().Get<FVector2D>();
     AddControllerPitchInput(Input.Y);
     AddControllerYawInput(Input.X);
+
     // GEngine->AddOnScreenDebugMessage(0, 3.0f, FColor::Blue, TEXT("Look"));
 }
 // * Crouching and sliding functionality
@@ -202,6 +228,7 @@ void AFPSCharacter::StartCrouch(const FInputActionInstance &Instance)
     // GEngine->AddOnScreenDebugMessage(0, 5.f, FColor::Green,
     //                                  FString::Printf(TEXT("Velocity = %d"),
     //                                  GetCharacterMovement()->Velocity.SizeSquared2D()));
+
     // Sets ground friction to sliding friction
     GetCharacterMovement()->GroundFriction = SlideFriction;
     GetCharacterMovement()->BrakingFrictionFactor = 0.1f;
@@ -283,6 +310,7 @@ void AFPSCharacter::StartSlide()
         GetCharacterMovement()->Velocity += GetCharacterMovement()->Velocity.GetSafeNormal2D() * SlideForce;
         bAppliedSlideForce = true;
         AddVelocityMag = GradualSlideForce;
+
         // GEngine->AddOnScreenDebugMessage(0, 5.0f, FColor::Cyan, TEXT("JumpSlide"));
     }
 }
@@ -291,6 +319,18 @@ void AFPSCharacter::OnComponentHitCharacter(UPrimitiveComponent *HitComp, AActor
                                             UPrimitiveComponent *OtherComp, FVector NormalImpulse,
                                             const FHitResult &Hit)
 {
+    if (bIsWallrunning)
+    {
+        if (CurrentWall && OtherComp)
+        {
+            if (CurrentWall == OtherComp)
+            {
+                bIsOnWall = true;
+            }
+        }
+    }
+    WallLineTraceDelegate.Broadcast(Hit);
+
     // GEngine->AddOnScreenDebugMessage(0, 5.0f, FColor::Cyan, TEXT("CompHit"));
 }
 // Makes smoothly camera tilt when sliding
@@ -318,7 +358,7 @@ void AFPSCharacter::StartWallRun(const FHitResult &Hit)
         WallNormalVector = Hit.Normal;
         CurrentWall = Hit.GetComponent();
         WallRunTiltDirection = FMath::Sign(FVector::DotProduct(GetActorRightVector(), WallNormalVector));
-        if (!bIsWallrunning)
+        if (!bIsWallrunning && !bIsOnWall)
         {
             GetCharacterMovement()->Velocity.Z = 250;
         }
@@ -351,6 +391,7 @@ void AFPSCharacter::StopWallRun()
 {
     GetCharacterMovement()->Velocity += WallNormalVector * WallRunSpeed * GetWorld()->GetDeltaSeconds();
     bIsWallrunning = false;
+    bIsOnWall = false;
     // Reset current wall pointer
     CurrentWall = nullptr;
     // If falling when wall run stops, set to falling gravity
@@ -364,19 +405,19 @@ void AFPSCharacter::WallJump()
 {
     // TODO #8 - Make wall jump intensity consistent regardless of player's orientation to wall
     // Check if character is on wall and wall running
-    if (bIsWallrunning)
+    if (bIsWallrunning && bIsOnWall)
     {
         StopWallRun();
+        // Debug Message
         GEngine->AddOnScreenDebugMessage(
             INDEX_NONE, 2, FColor::Red,
             FString::Printf(TEXT("Wall Normal: %s"),
                             *FVector::VectorPlaneProject(WallNormalVector, FVector::UpVector).ToString()));
         // TODO #6 - Make wall jump preserve xy velocity
         // Launches the player upwards and off the wall
-        LaunchCharacter(
-            (FVector::UpVector * 1.7 + FVector::VectorPlaneProject(WallNormalVector, FVector::UpVector) * 2) *
-                WallJumpForce,
-            false, true);
+        LaunchCharacter((FVector::UpVector * 1 + FVector::VectorPlaneProject(WallNormalVector, FVector::UpVector) * 2) *
+                            WallJumpForce,
+                        false, true);
     }
 }
 // Triggers on landing from jump
