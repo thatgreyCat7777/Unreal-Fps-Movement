@@ -106,6 +106,8 @@ private:
     // Max number of jumps that player can perform in air
     UPROPERTY(EditAnywhere, Category = "Double Jump Movement")
     int AirJumpMax = 1;
+    UPROPERTY(EditAnywhere, Category = "Air Strafing")
+    float AirStrafeMagnitude = 1;
     // Keeps track number of air jumps player can perform
     int AirJumpCount = 1;
 

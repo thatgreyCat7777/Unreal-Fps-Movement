@@ -8,6 +8,7 @@
 #include "Engine/Engine.h"
 #include "Engine/EngineTypes.h"
 #include "Engine/HitResult.h"
+#include "Engine/TimerHandle.h"
 #include "EnhancedInputComponent.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -45,7 +46,7 @@ AFPSCharacter::AFPSCharacter()
 
     // Sets character's max walkspeed to default set in the class
     GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
-    GetCharacterMovement()->AirControl = .7f;
+    GetCharacterMovement()->AirControl = .7;
     GetCharacterMovement()->FormerBaseVelocityDecayHalfLife = 1;
     GetCharacterMovement()->MaxStepHeight = 50;
     GetCharacterMovement()->JumpZVelocity = 620;
@@ -167,11 +168,15 @@ void AFPSCharacter::SetupPlayerInputComponent(UInputComponent *PlayerInputCompon
 void AFPSCharacter::Walk(const FInputActionInstance &Instance)
 {
     // Gets value of input
-    WalkingInput = Instance.GetValue().Get<FVector>() * 320;
+    WalkingInput = Instance.GetValue().Get<FVector>() * GetCharacterMovement()->MaxWalkSpeed;
     WalkingInput = WalkingInput.X * GetActorRightVector() + WalkingInput.Y * GetActorForwardVector();
     // Adds input corresponding to character's forward and right vector
     AddMovementInput(WalkingInput);
-    AirAccelerate(WalkingInput);
+
+    if (GetCharacterMovement()->IsFalling() && !bIsWallrunning)
+    {
+        AirAccelerate(WalkingInput);
+    }
 
     // GEngine->AddOnScreenDebugMessage(0, 5.f, FColor::Green,
     //                                  FString::Printf(TEXT("Velocity = %d, Floor normal = %d"),
@@ -195,14 +200,15 @@ void AFPSCharacter::AirAccelerate(FVector WishVelocity)
         WishSpeed = 30;
 
     // Determines current speed by the allignment of the player input and player current velocity
-    CurrentSpeed = FVector::DotProduct(WishVelocity, GetCharacterMovement()->Velocity);
+    CurrentSpeed = FVector::DotProduct(
+        WishVelocity, FVector(GetCharacterMovement()->Velocity.X, GetCharacterMovement()->Velocity.Y, 0));
     AddSpeed = WishSpeed - CurrentSpeed;
     if (AddSpeed <= 0)
         return;
 
-    AccelSpeed = WalkingInput.Length() * 300 * GetWorld()->GetDeltaSeconds();
+    AccelSpeed = WalkingInput.Length() * GetWorld()->GetDeltaSeconds();
 
-    GetCharacterMovement()->Velocity += AccelSpeed * WishVelocity;
+    GetCharacterMovement()->Velocity += AccelSpeed * WishVelocity * 10 * AirStrafeMagnitude;
 }
 // Function for player camera rotation
 void AFPSCharacter::Look(const FInputActionInstance &Instance)
@@ -370,7 +376,7 @@ void AFPSCharacter::StartWallRun(const FHitResult &Hit)
         WallPerpendicularNormalVector = VectorRotate(WallNormalVector, PI / 2.0, 0, 0);
         WallPerpendicularNormalVector *=
             FMath::Sign(FVector::DotProduct(GetCharacterMovement()->Velocity, WallPerpendicularNormalVector));
-
+        GetCharacterMovement()->AirControl = 0;
         GEngine->AddOnScreenDebugMessage(
             INDEX_NONE, 5.0f, FColor::Blue,
             FString::Printf(TEXT("Perpenticulat wall vector = %s"), *WallPerpendicularNormalVector.ToString()));
@@ -399,6 +405,9 @@ void AFPSCharacter::StopWallRun()
     {
         GetCharacterMovement()->GravityScale = 1.5;
     }
+    GetCharacterMovement()->AirControl = .2;
+    FTimerHandle Timer;
+    GetWorldTimerManager().SetTimer(Timer, [this]() { GetCharacterMovement()->AirControl = 0.7; }, 1, false);
 }
 // Jumps off the wall when wall running
 void AFPSCharacter::WallJump()
