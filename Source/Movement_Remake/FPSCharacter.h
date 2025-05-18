@@ -72,7 +72,7 @@ private:
     float CrouchScale = .5f;
     // Scale in normal state
     UPROPERTY(EditAnywhere, Category = "Crouching")
-    FVector NormalScale = {1, 1, 1};
+    FVector NormalScale = {1.5, 1.5, 1.5};
 
     // Movement Physics
 

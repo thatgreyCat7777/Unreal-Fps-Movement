@@ -331,20 +331,20 @@ bool AFPSCharacter::IsWall(const FVector &Normal)
 // Starts the wall run
 void AFPSCharacter::StartWallRun(const FHitResult &Hit)
 {
-    if (!GetCharacterMovement()->IsMovingOnGround())
+    if (GetCharacterMovement()->IsFalling())
     {
-        WallNormalVector = Hit.Normal;
-        CurrentWall = Hit.GetComponent();
-        WallRunTiltDirection = FMath::Sign(FVector::DotProduct(GetActorRightVector(), WallNormalVector));
         if (!bIsWallrunning)
         {
+            CurrentWall = Hit.GetComponent();
             GetCharacterMovement()->Velocity.Z = 250;
+            bIsWallrunning = true;
+            // Reset double jump
+            AirJumpCount = AirJumpMax;
+            // Set gravity to normal
+            GetCharacterMovement()->GravityScale = 1;
         }
-        bIsWallrunning = true;
-        // Reset double jump
-        AirJumpCount = AirJumpMax;
-        // Set gravity to normal
-        GetCharacterMovement()->GravityScale = 1;
+        WallNormalVector = Hit.Normal;
+        WallRunTiltDirection = FMath::Sign(FVector::DotProduct(GetActorRightVector(), WallNormalVector));
         WallPerpendicularNormalVector = VectorRotate(WallNormalVector, PI / 2.0, 0, 0);
         WallPerpendicularNormalVector *=
             FMath::Sign(FVector::DotProduct(GetCharacterMovement()->Velocity, WallPerpendicularNormalVector));
@@ -362,7 +362,7 @@ void AFPSCharacter::WallRun(const float &DeltaTime)
     // Counter gravity to make player fall slower
     GetCharacterMovement()->Velocity += DeltaTime * GetCharacterMovement()->Mass * WallRunCounterGravity *
                                         -GetCharacterMovement()->GetGravityDirection() * .4f;
-    GetCharacterMovement()->Velocity += WallPerpendicularNormalVector * DeltaTime * WallRunSpeed * .1;
+    GetCharacterMovement()->Velocity += WallPerpendicularNormalVector * DeltaTime * WallRunSpeed * .2;
 }
 // Stops the wall running
 void AFPSCharacter::StopWallRun()
@@ -452,16 +452,12 @@ void AFPSCharacter::OnLineWallTraceHit(const FHitResult &Hit)
             GetWorldTimerManager().ClearTimer(WallRunTimer);
         }
         GetWorldTimerManager().SetTimer(WallRunTimer, [this]() { StopWallRun(); }, .1, false);
-        return;
     }
     if (IsWall(Hit.Normal))
     {
-        if (GetCharacterMovement()->IsFalling() && !bIsWallrunning)
-        {
-            GEngine->AddOnScreenDebugMessage(INDEX_NONE, 2, FColor::Red,
-                                             FString::Printf(TEXT("IsWall! Hit.Normal = %s"), *Hit.Normal.ToString()));
-            StartWallRun(Hit);
-        }
+        GEngine->AddOnScreenDebugMessage(INDEX_NONE, 2, FColor::Red,
+                                         FString::Printf(TEXT("IsWall! Hit.Normal = %s"), *Hit.Normal.ToString()));
+        StartWallRun(Hit);
     }
 }
 // Returns rotated vector by pitch, yaw and roll angles respectively where angles are in radians
