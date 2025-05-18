@@ -375,14 +375,14 @@ void AFPSCharacter::StopWallRun()
     if (GetCharacterMovement()->IsFalling())
     {
         GetCharacterMovement()->GravityScale = 1.5;
+        GetCharacterMovement()->AirControl = .1;
+        if (AirControlResetTimer.IsValid())
+        {
+            GetWorldTimerManager().ClearTimer(AirControlResetTimer);
+        }
+        GetWorldTimerManager().SetTimer(
+            AirControlResetTimer, [this]() { GetCharacterMovement()->AirControl = 0.7; }, .4, false);
     }
-    GetCharacterMovement()->AirControl = .1;
-    if (AirControlResetTimer.IsValid())
-    {
-        GetWorldTimerManager().ClearTimer(AirControlResetTimer);
-    }
-    GetWorldTimerManager().SetTimer(
-        AirControlResetTimer, [this]() { GetCharacterMovement()->AirControl = 0.7; }, .4, false);
 }
 // Jumps off the wall when wall running
 void AFPSCharacter::WallJump()
