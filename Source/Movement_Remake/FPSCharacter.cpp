@@ -83,24 +83,6 @@ void AFPSCharacter::BeginPlay()
 void AFPSCharacter::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
-    FHitResult LineTrace;
-    FCollisionQueryParams QueryParams;
-    QueryParams.AddIgnoredActor(this);
-    if (GetWorld()->LineTraceSingleByChannel(LineTrace, GetActorLocation(),
-                                             GetActorLocation() + GetActorRightVector() * 80,
-                                             WallDetectionChannel.GetValue(), QueryParams))
-    {
-    }
-    else if (GetWorld()->LineTraceSingleByChannel(LineTrace, GetActorLocation(),
-                                                  GetActorLocation() + GetActorRightVector() * -80,
-                                                  WallDetectionChannel.GetValue(), QueryParams))
-    {
-    }
-    else if (bIsWallrunning)
-    {
-        // If no wall found anymore, stop wall run
-        StopWallRun();
-    }
     if (bIsCrouching)
     {
         // Makes smoothly camera tilt when sliding
@@ -326,18 +308,7 @@ void AFPSCharacter::OnComponentHitCharacter(UPrimitiveComponent *HitComp, AActor
                                             UPrimitiveComponent *OtherComp, FVector NormalImpulse,
                                             const FHitResult &Hit)
 {
-    if (bIsWallrunning)
-    {
-        if (CurrentWall && OtherComp)
-        {
-            if (CurrentWall == OtherComp)
-            {
-                bIsOnWall = true;
-            }
-        }
-    }
     WallLineTraceDelegate.Broadcast(Hit);
-
     // GEngine->AddOnScreenDebugMessage(0, 5.0f, FColor::Cyan, TEXT("CompHit"));
 }
 // Makes smoothly camera tilt when sliding
@@ -365,7 +336,7 @@ void AFPSCharacter::StartWallRun(const FHitResult &Hit)
         WallNormalVector = Hit.Normal;
         CurrentWall = Hit.GetComponent();
         WallRunTiltDirection = FMath::Sign(FVector::DotProduct(GetActorRightVector(), WallNormalVector));
-        if (!bIsWallrunning && !bIsOnWall)
+        if (!bIsWallrunning)
         {
             GetCharacterMovement()->Velocity.Z = 250;
         }
@@ -398,7 +369,6 @@ void AFPSCharacter::StopWallRun()
 {
     GetCharacterMovement()->Velocity += WallNormalVector * WallRunSpeed * GetWorld()->GetDeltaSeconds();
     bIsWallrunning = false;
-    bIsOnWall = false;
     // Reset current wall pointer
     CurrentWall = nullptr;
     // If falling when wall run stops, set to falling gravity
@@ -419,7 +389,7 @@ void AFPSCharacter::WallJump()
 {
     // TODO #8 - Make wall jump intensity consistent regardless of player's orientation to wall
     // Check if character is on wall and wall running
-    if (bIsWallrunning && bIsOnWall)
+    if (bIsWallrunning)
     {
         StopWallRun();
         // Debug Message
@@ -476,7 +446,14 @@ void AFPSCharacter::AirJump()
 void AFPSCharacter::OnLineWallTraceHit(const FHitResult &Hit)
 {
     if (Hit.GetComponent() && CurrentWall && Hit.GetComponent() == CurrentWall)
+    {
+        if (WallRunTimer.IsValid())
+        {
+            GetWorldTimerManager().ClearTimer(WallRunTimer);
+        }
+        GetWorldTimerManager().SetTimer(WallRunTimer, [this]() { StopWallRun(); }, .1, false);
         return;
+    }
     if (IsWall(Hit.Normal))
     {
         if (GetCharacterMovement()->IsFalling() && !bIsWallrunning)

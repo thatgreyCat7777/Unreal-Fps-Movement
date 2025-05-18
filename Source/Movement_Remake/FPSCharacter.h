@@ -137,8 +137,6 @@ private:
     bool bAppliedSlideForce = false;
     // True when player is wallrunning
     bool bIsWallrunning = false;
-    // True when player touches wall
-    bool bIsOnWall = false;
     // Normal vector for wall normal
     FVector WallNormalVector;
     // Perpendicular wall normal
@@ -155,6 +153,8 @@ private:
     FVector WalkingInput = {0, 0, 0};
     // Keeps track of air control reset time after wall jump
     FTimerHandle AirControlResetTimer;
+    // Timer to keep track whether player is still wall running
+    FTimerHandle WallRunTimer;
 
 protected:
     // Wall detection script delegate
