@@ -7,6 +7,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Engine/EngineTypes.h"
+#include "Engine/TimerHandle.h"
 #include "GameFramework/Actor.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -99,6 +100,8 @@ private:
     float WallRunSpeed = 1000;
     UPROPERTY(EditAnywhere, Category = "Wallrun Movement")
     float WallJumpForce = 420.f;
+    UPROPERTY(EditAnywhere, Category = "Wallrun Movement")
+    float WallRunAirControl = .7;
     // Collision channel in line trace for wall detection
     UPROPERTY(EditAnywhere, Category = "Wallrun Movement")
     TEnumAsByte<ECollisionChannel> WallDetectionChannel =
@@ -150,6 +153,8 @@ private:
     float MinSlideSpeed = WalkSpeed * .5;
     // Keeps track of current player wasd input
     FVector WalkingInput = {0, 0, 0};
+    // Keeps track of air control reset time after wall jump
+    FTimerHandle AirControlResetTimer;
 
 protected:
     // Wall detection script delegate

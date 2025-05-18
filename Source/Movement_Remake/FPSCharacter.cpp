@@ -208,7 +208,8 @@ void AFPSCharacter::AirAccelerate(FVector WishVelocity)
 
     AccelSpeed = WalkingInput.Length() * GetWorld()->GetDeltaSeconds();
 
-    GetCharacterMovement()->Velocity += AccelSpeed * WishVelocity * 10 * AirStrafeMagnitude;
+    GetCharacterMovement()->Velocity +=
+        AccelSpeed * WishVelocity * 10 * AirStrafeMagnitude * 1.43 * GetCharacterMovement()->AirControl;
 }
 // Function for player camera rotation
 void AFPSCharacter::Look(const FInputActionInstance &Instance)
@@ -376,7 +377,7 @@ void AFPSCharacter::StartWallRun(const FHitResult &Hit)
         WallPerpendicularNormalVector = VectorRotate(WallNormalVector, PI / 2.0, 0, 0);
         WallPerpendicularNormalVector *=
             FMath::Sign(FVector::DotProduct(GetCharacterMovement()->Velocity, WallPerpendicularNormalVector));
-        GetCharacterMovement()->AirControl = 0;
+        GetCharacterMovement()->AirControl = WallRunAirControl;
         GEngine->AddOnScreenDebugMessage(
             INDEX_NONE, 5.0f, FColor::Blue,
             FString::Printf(TEXT("Perpenticulat wall vector = %s"), *WallPerpendicularNormalVector.ToString()));
@@ -405,9 +406,13 @@ void AFPSCharacter::StopWallRun()
     {
         GetCharacterMovement()->GravityScale = 1.5;
     }
-    GetCharacterMovement()->AirControl = .2;
-    FTimerHandle Timer;
-    GetWorldTimerManager().SetTimer(Timer, [this]() { GetCharacterMovement()->AirControl = 0.7; }, 1, false);
+    GetCharacterMovement()->AirControl = .1;
+    if (AirControlResetTimer.IsValid())
+    {
+        GetWorldTimerManager().ClearTimer(AirControlResetTimer);
+    }
+    GetWorldTimerManager().SetTimer(
+        AirControlResetTimer, [this]() { GetCharacterMovement()->AirControl = 0.7; }, .4, false);
 }
 // Jumps off the wall when wall running
 void AFPSCharacter::WallJump()
