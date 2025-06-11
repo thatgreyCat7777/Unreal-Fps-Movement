@@ -463,12 +463,15 @@ void AFPSCharacter::OnLineWallTraceHit(const FHitResult &Hit)
 // Returns rotated vector by pitch, yaw and roll angles respectively where angles are in radians
 FVector AFPSCharacter::VectorRotate(const FVector &vec, const double &theta, const double &phi, const double &rho)
 {
+    const double &T = theta, P = rho, R = phi;
     // Precomputed values of sin and cos where 0,1,2th index represents sin and cos of theta, phi and rho respectively
-    double s[3] = {sin(theta), sin(phi), sin(rho)};
-    double c[3] = {cos(theta), cos(phi), cos(rho)};
+    double s[3] = {sin(T), sin(R), sin(P)};
+    double c[3] = {cos(T), cos(R), cos(P)};
 
-    return vec.X * FVector(c[0] * c[1], s[0] * c[1], s[1]) +
-           vec.Y * FVector(s[0] * c[2] + c[0] * s[1] * s[2], s[0] * s[1] * s[2] - c[0] * c[2], -c[1] * s[2]) +
-           vec.Z * FVector(-s[0] * s[2] - s[0] * s[1] * c[2], c[0] * s[2] - s[0] * s[1] * c[2], -c[1] * c[2]);
+    return FVector(vec.X * (s[0] * s[1] * s[2] + c[0] * c[2]) + vec.Y * (-s[0] * c[1]) +
+                       vec.Z * (s[0] * s[1] * c[2] - c[0] * s[2]),
+                   vec.X * (s[0] * c[1] - c[0] * s[1] * s[2]) + vec.Y * (c[0] * c[1]) +
+                       vec.Z * (-c[0] * s[1] * c[2] - s[0] * s[2]),
+                   vec.X * (c[1] * s[2]) + vec.Y * (s[1]) + vec.Z * (c[1] * c[2]));
 }
 // TODO #4 - Add vaulting functionality
