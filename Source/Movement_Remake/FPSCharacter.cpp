@@ -463,7 +463,7 @@ void AFPSCharacter::OnLineWallTraceHit(const FHitResult &Hit)
 // Returns rotated vector by pitch, yaw and roll angles respectively where angles are in radians
 FVector AFPSCharacter::VectorRotate(const FVector &vec, const double &theta, const double &phi, const double &rho)
 {
-    const double &T = theta, P = rho, R = phi;
+    const double &T = theta, &P = rho, &R = phi;
     // Precomputed values of sin and cos where 0,1,2th index represents sin and cos of theta, phi and rho respectively
     double s[3] = {sin(T), sin(R), sin(P)};
     double c[3] = {cos(T), cos(R), cos(P)};
