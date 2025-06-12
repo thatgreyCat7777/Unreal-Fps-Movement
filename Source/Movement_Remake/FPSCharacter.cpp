@@ -460,13 +460,12 @@ void AFPSCharacter::OnLineWallTraceHit(const FHitResult &Hit)
         StartWallRun(Hit);
     }
 }
-// Returns rotated vector by pitch, yaw and roll angles respectively where angles are in radians
-FVector AFPSCharacter::VectorRotate(const FVector &vec, const double &theta, const double &phi, const double &rho)
+// Returns rotated vector by yaw, pitch and roll angles respectively where angles are in radians
+FVector AFPSCharacter::VectorRotate(const FVector &vec, const double &yaw, const double &pitch, const double &roll)
 {
-    const double &T = theta, &P = rho, &R = phi;
-    // Precomputed values of sin and cos where 0,1,2th index represents sin and cos of theta, phi and rho respectively
-    double s[3] = {sin(T), sin(R), sin(P)};
-    double c[3] = {cos(T), cos(R), cos(P)};
+    // Precomputed values of sin and cos where 0,1,2th index represents sin and cos of yaw, pitch and roll respectively
+    double s[3] = {sin(yaw), sin(pitch), sin(roll)};
+    double c[3] = {cos(yaw), cos(pitch), cos(roll)};
 
     return FVector(vec.X * (s[0] * s[1] * s[2] + c[0] * c[2]) + vec.Y * (-s[0] * c[1]) +
                        vec.Z * (s[0] * s[1] * c[2] - c[0] * s[2]),
