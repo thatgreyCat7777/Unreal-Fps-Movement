@@ -18,7 +18,7 @@ https://github.com/user-attachments/assets/95d9c40a-0e79-40c3-8d78-8c31d98ab764
   * I made this project as a movement system for a first person shooter that i plan to make, inspired by titanfall 2's movement system.
 * **Why did I build this?**
   * I made this project to create a fps movement system for a fps game that i plan to work on in the future. Inspired by titanfall 2's movement system. Making use of my previous experience in
-game development with the unity game engine and the critical thinking skills i have learnt from CS50x.
+game development with the unity game engine and the critical thinking skills i have learnt from [A certain online programming course].
 * **Key Features:**
     * **Wall-Running:** Allows players to traverse vertical surfaces.
     * **Wall-Jumping:** Provides additional vertical and horizontal mobility off walls.
@@ -110,10 +110,10 @@ What are your plans for the project if you had more time? This shows forward-thi
 
 ## 🙏 Acknowledgements
 
-* **CS50x:** "This project was completed as the final project for CS50x, Harvard University's introduction to the intellectual enterprises of computer science and the art of programming."
+* **[REDACTED: A certain online course]:** "This project was completed as the final project for [REDACTED: A certain online course], [REDACTED]"
 * **Resources:** Any specific tutorials, libraries, or individuals that greatly helped you.
     * Vs code unreal clangd extension (https://github.com/boocs/unreal-clangd) for helping me get intellisense working with unreal engine and vs code
-    * "Special thanks to pensivepanda5 for their valuable insights on project scope"
+    * "Special thanks to [Someone in the course] for their valuable insights on project scope"
 
 ---
 
@@ -121,5 +121,5 @@ What are your plans for the project if you had more time? This shows forward-thi
 
 * **[Lim Zhi Yuan Devon]**
 * **GitHub:** [https://github.com/thatgreyCat7777](https://github.com/thatgreyCat7777)
-* **CS50x edX Username:** [thatgreyCat7777]
+* **edX Username:** [thatgreyCat7777]
 
